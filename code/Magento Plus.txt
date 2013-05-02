@@ -1,0 +1,1661 @@
+High-level Magento architecture
+
+○ Describe Magento codepools
+	
+	Magento has three different codepools:
+
+	Community
+	Core
+	Local
+
+	Core pool
+
+		First of all, this folder stores all the code that makes Magento so powerful, flexible and lovely. The chief rule of Magento development is that you should never make any changes in it. In other words, this folder belongs to Magento core developers only and if you are going to edit anything in this pool, their evil spirit could punish you even through the display.
+
+	Community pool
+
+		This folder belongs entirely to community developers. This is the right place for hundreds of 3rd party extensions, both free and paid, that can be found at MagentoConnect or available on extensions development store (for instance, http://store.belvg.com/). So basically, if you have installed any extension, it must be in app/code/community/ only.
+
+	Local pool
+
+		If you have your own Magento-based store and want to make everything by yourself or you are a Magento developer and have a purpose to change the logic somehow, local pool is the place where everything should be done. If you want to override Magento extensions, blocks or methods, copy the necessary folders from the Core pool and do whatever you are inclined to do. Apply the same rule for custom extensions that are created specifically for the website – all code should be in local pool.
+
+		How does the framework interact with the various codepools?
+
+			To identify the proccess let’s take a look at app/Mage.php
+
+			/**
+			* Set include path
+			*/
+			$paths[] = BP . DS . 'app' . DS . 'code' . DS . 'local';
+			$paths[] = BP . DS . 'app' . DS . 'code' . DS . 'community';
+			$paths[] = BP . DS . 'app' . DS . 'code' . DS . 'core';
+			$paths[] = BP . DS . 'lib';
+
+			$appPath = implode(PS, $paths);
+			set_include_path($appPath . PS . Mage::registry('original_include_path'));
+			include_once "Mage/Core/functions.php";
+			include_once "Varien/Autoload.php";
+
+	This code snippet illustrates the order Magento is using to include paths – firstly it includes Local code pool, than community and after that – core, which allow developers to override classes without changing core files.
+
+
+○ Describe typical Magento module structure
+
+	Block
+		This folder liability is View, if we use terms of classical MVC architecture. Blocks coordinate models with the template files. The files in the folder load the data from database and transfer it to the templates in your theme (.phtml files).
+
+	Controllers
+		Controllers represent all business logic actions for the given request (dispatch(), preDispatch(), postDispatch() methods) and delegate commands to other parts of the system.
+
+	etc
+		It contains all xml files that declare and configure behavior of all modules. Each module must have at least config.xml and it’s a right place to declare all models, routers, blocks, helpers, etc.
+
+			<config>
+			    <modules>
+			        <Namespace_Modulename>
+			            <version>0.1.0</version>
+			        </Namespace_Modulename>
+			    </modules>
+			</config>
+
+		Optionally this folder could have adminhtml.xml (grant permissions for your tabs/sections in backend menus) and system.xml (creates this new section or specifies where it should be displayed in existing one).
+	
+	Helper
+		Here you can create methods that would be useful for your store in different ways. Helpers contain utility methods, which are commonly used in the whole system. Methods, declared in helpers, can be called from any template file or block, model, controller class by
+
+			Mage::helper('modulename/helpername')->methodName();
+
+		Each Module has a default Data Helper class Modulename/Helper/Data.php and we can call it as
+
+			Mage::helper('modulename')->methodName();
+
+	Model
+		In classical MVC, Models are used to connect to the database and process the data from and to it. Magento has a different approach, which can be tricky at first look. Here is what they say:
+			“Most Magento Models can categorized in one of two ways. There’s a basic, ActiveRecord-like/one-object-one-table Model, and there’s also an Entity Attribute Value (EAV) Model. Each Model also gets a Model Collection. Collections are PHP objects used to hold a number of individual Magento Model instances. The Magento team has implemented the PHP Standard Library interfaces of IteratorAggregate and Countable to allow each Model type to have it’s own collection type. If you’re not familiar with the PHP Standard Library, think of Model Collections as arrays that also have methods attached. Magento Models don’t contain any code for connecting to the database. Instead, each Model uses two modelResource classes, (one read, one write), that are used to communicate with the database server (via read and write adapter objects).”
+
+	sql
+		Handles any custom database tables which will be used by the module and process all upgrades to the extension.
+
+			etc/modules/Namespace_Modulename.xml
+
+		To tell Magento which modules should be used and where they are located, we need to create XML file in the folder, from which it takes all xml files – etc/modules/
+
+			<?xml version="1.0"?>
+			<config>
+			    <modules>
+			        <Namespace_Modulename>
+			            <active>true</active> 
+			            <codePool>local</codePool> 
+			        </Namespace_Modulename>
+			    </modules>
+			</config>
+
+		You can indicate additional parameters such as depends, version and platform (can be defined in module’s config.xml as well):
+
+	Depends
+
+		<depends>
+		    <Mage_Catalog />
+		</depends>
+
+	Version
+
+		<version>0.1.0</version>
+
+	Platform
+
+		<platform>сe</platform> <!-- (ce=community edition,pe=professional etc.) -->
+
+○ Identifying ad explaining the main Magento design areas 
+	All frontend files are stored in three main Magento design areas.
+
+	install
+		Files from this area will be displayed during the installation process.
+
+	adminhtml
+		Everything that you will observe while working in the admin panel can be found here. In other words, if module performs anything related to admin panel, all templates and layouts will be there.
+
+	frontend
+		Everything that can be observed on your webstore by any customer is stored there.
+
+	What does the structure of a complete theme look like?
+	 
+	Package
+		There are two basic packages that come with Magento installation – base and default for Community Edition, base and enterprise for Enterprise Edition and base and pro for deprecated Professional Edition.
+
+	Themes
+		Theme is a set of layout, template, locale and skin files, i.e. visual representation of your store. Magento is built with the option of loading multiple themes which can be divided into two major types:
+
+	Default theme
+		Each package has a ‘default’ theme, i.e. the main theme of this interface. Magento automatically searches the default theme and loads it to the front-end. There are two ways of changing a store appearance: either by bringing changes directly to the theme, or, which I personally find better, creating an individual non-default theme.
+
+	Non-default theme
+		Non-default theme can be completely different from the default theme or may contain some images of them. Corrections in CSS file, layout file and all the rest will be loaded from the interface default theme. Dig more about creation of a non-default theme here.
+
+
+○ Describe Magento templates and layout files location
+
+	A theme consists of the following elements:
+
+	Layout
+	 	folder includes XML files that define the layout of the theme. Layout files work as a “glue” between the modules (which are found under the app/code directory), and the template files. For more information read Intro to Layouts
+
+		Because of Magento modularity, all XML files of the default theme are stored in separate folders with the name of the module to which they belong to. A non-default theme, contrariwise, should have a single layout file, named local.xml, where all layout updates are placed.
+
+	Template
+		 folder contains of .phtml files that have HTML and PHP code for each Magento blocks which will be displayed in the frontend.
+
+	Locale 
+		folder contains .of CSV files organized on a per language basis that provide translations in format of languagecode_COUNTRTYCODE (en_US or en_UK)/translate.csv. 
+
+
+○ Describe Magento skin and JavaScript files location
+
+	Skin 
+		folder includes Javascript, CSS and image files that are used in .phtml files in template folder, i.e. all the files in this folder vary from theme to theme. From the given picture you can see that there are three main folders – CSS for style-sheets of your theme, images (for media files that are used in your theme) and JS for the templates javascript files.
+
+	JS
+	 	folder embodies JS files, libraries and frameworks that are used via frontend and backend. If you need to add a new Javascript/AJAX library or your module from Local code pool requires special scripts, they should be placed here.
+
+
+○ Explain class naming conventions and their relationship with the autoloader
+
+	Classes
+		Zend Framework standardizes on a class naming convention whereby the names of the classes directly map to the directories in which they are stored. The root level directory of Zend Framework's standard library is the "Zend/" directory, whereas the root level directory of Zend Framework's extras library is the "ZendX/" directory. All Zend Framework classes are stored hierarchically under these root directories..
+
+		Class names may only contain alphanumeric characters. Numbers are permitted in class names but are discouraged in most cases. Underscores are only permitted in place of the path separator; the filename "Zend/Db/Table.php" must map to the class name "Zend_Db_Table".
+
+		If a class name is comprised of more than one word, the first letter of each new word must be capitalized. Successive capitalized letters are not allowed, e.g. a class "Zend_PDF" is not allowed while "Zend_Pdf" is acceptable.
+
+		These conventions define a pseudo-namespace mechanism for Zend Framework. Zend Framework will adopt the PHP namespace feature when it becomes available and is feasible for our developers to use in their applications.
+
+		See the class names in the standard and extras libraries for examples of this classname convention.
+
+		Note: Important: Code that must be deployed alongside Zend Framework libraries but is not part of the standard or extras libraries (e.g. application code or libraries that are not distributed by Zend) must never start with "Zend_" or "ZendX_". 
+
+	Abstract Classes
+		In general, abstract classes follow the same conventions as classes, with one additional rule: abstract class names must end in the term, "Abstract", and that term must not be preceded by an underscore. As an example, Zend_Controller_Plugin_Abstract is considered an invalid name, but Zend_Controller_PluginAbstract or Zend_Controller_Plugin_PluginAbstract would be valid names.
+
+		Note: This naming convention is new with version 1.9.0 of Zend Framework. Classes that pre-date that version may not follow this rule, but will be renamed in the future in order to comply. 
+	
+		The rationale for the change is due to namespace usage. As we look towards Zend Framework 2.0 and usage of PHP 5.3, we will be using namespaces. The easiest way to automate conversion to namespaces is to simply convert underscores to the namespace separator -- but under the old naming conventions, this leaves the classname as simply "Abstract" or "Interface" -- both of which are reserved keywords in PHP. If we prepend the (sub)component name to the classname, we can avoid these issues. 
+	
+		To illustrate the situation, consider converting the class Zend_Controller_Request_Abstract to use namespaces: 
+
+	Interfaces
+		In general, interfaces follow the same conventions as classes, with one additional rule: interface names may optionally end in the term, "Interface", but that term must not be preceded by an underscore. As an example, Zend_Controller_Plugin_Interface is considered an invalid name, but Zend_Controller_PluginInterface or Zend_Controller_Plugin_PluginInterface would be valid names.
+
+		While this rule is not required, it is strongly recommended, as it provides a good visual cue to developers as to which files contain interfaces rather than classes.
+
+		Note: This naming convention is new with version 1.9.0 of Zend Framework. Classes that pre-date that version may not follow this rule, but will be renamed in the future in order to comply. See the previous section for more information on the rationale for this change. 
+
+	Filenames
+		For all other files, only alphanumeric characters, underscores, and the dash character ("-") are permitted. Spaces are strictly prohibited.
+
+		Any file that contains PHP code should end with the extension ".php", with the notable exception of view scripts. The following examples show acceptable filenames for Zend Framework classes:
+
+	Functions and Methods
+		Function names may only contain alphanumeric characters. Underscores are not permitted. Numbers are permitted in function names but are discouraged in most cases.
+
+		Function names must always start with a lowercase letter. When a function name consists of more than one word, the first letter of each new word must be capitalized. This is commonly called "camelCase" formatting.
+
+		Verbosity is generally encouraged. Function names should be as verbose as is practical to fully describe their purpose and behavior.
+
+		For object-oriented programming, accessors for instance or static variables should always be prefixed with "get" or "set". In implementing design patterns, such as the singleton or factory patterns, the name of the method should contain the pattern name where practical to more thoroughly describe behavior.
+
+		For methods on objects that are declared with the "private" or "protected" modifier, the first character of the method name must be an underscore. This is the only acceptable application of an underscore in a method name. Methods declared "public" should never contain an underscore.
+
+		Functions in the global scope (a.k.a "floating functions") are permitted but discouraged in most cases. Consider wrapping these functions in a static class.
+
+	Variables
+		Variable names may only contain alphanumeric characters. Underscores are not permitted. Numbers are permitted in variable names but are discouraged in most cases.
+
+		For instance variables that are declared with the "private" or "protected" modifier, the first character of the variable name must be a single underscore. This is the only acceptable application of an underscore in a variable name. Member variables declared "public" should never start with an underscore.
+
+		As with function names (see section 3.3) variable names must always start with a lowercase letter and follow the "camelCaps" capitalization convention.
+
+		Verbosity is generally encouraged. Variables should always be as verbose as practical to describe the data that the developer intends to store in them. Terse variable names such as "$i" and "$n" are discouraged for all but the smallest loop contexts. If a loop contains more than 20 lines of code, the index variables should have more descriptive names.
+
+	Constants
+		Constants may contain both alphanumeric characters and underscores. Numbers are permitted in constant names.
+
+		All letters used in a constant name must be capitalized, while all words in a constant name must be separated by underscore characters.
+
+		For example, EMBED_SUPPRESS_EMBED_EXCEPTION is permitted but EMBED_SUPPRESSEMBEDEXCEPTION is not.
+
+		Constants must be defined as class members with the "const" modifier. Defining constants in the global scope with the "define" function is permitted but strongly discouraged.
+
+	Magento standardizes class names depending on their location in the file system. Such standardization enables automatic class loading (autoloader) instead of using require_once and include_once functions. Rather than the directory separator (‘/’ – invalid character for class names), developers use the underscore character (‘_’).
+
+
+	For example, the Mage_Catalog_Model_Product class is located in the /app/code/core/Mage/Catalog/Model/Product.php category. Magento autoloader replaces all underscore characters (‘_’) with the category separator (‘/’) and looks for the file in one of the categories (/app/code/local can be disabled in the app/etc/local.xml in the disable_local_modules tag).
+
+		- /app/code/core
+
+		- /app/code/community
+
+		- /app/code/local
+
+		- /lib/
+
+	File search categories in Magento are defined in app/Mage.php.
+
+		/**
+	     * Set include path
+	     */
+	    $paths[] = BP . DS . 'app' . DS . 'code' . DS . 'local';
+	    $paths[] = BP . DS . 'app' . DS . 'code' . DS . 'community';
+	    $paths[] = BP . DS . 'app' . DS . 'code' . DS . 'core';
+	    $paths[] = BP . DS . 'lib';
+
+	    $appPath = implode(PS, $paths);
+	    set_include_path($appPath . PS . Mage::registry('original_include_path'));
+	    include_once "Mage/Core/functions.php";
+	    include_once "Varien/Autoload.php";
+
+	The Varien_Autoload class is used for automatic upload:
+
+		class Varien_Autoload
+		{
+		...
+			/**
+		     * Register SPL autoload function
+		     */
+			static public function register()
+			{
+			        spl_autoload_register(array(self::instance(), 'autoload'));
+			}
+
+		  	/**
+		     * Load class source code
+		     *
+		     * @param string $class
+		     */
+		    public function autoload($class)
+		    {
+			
+			...
+		   		$classFile = str_replace(' ', DIRECTORY_SEPARATOR, ucwords(str_replace('_', ' ', $class)));
+			...
+		   		$classFile.= '.php';
+		     	return include $classFile;
+		    }
+
+	Creating objects in Magento
+
+		Magento provides a special method to create models, helpers and blocks, using the Mage global class with a shortened class name. For example, to get the Mage_Catalog_Model_Product model in Magento the Mage :: getModel (‘catalog / product’) method is commonly used.
+
+			catalog – shortening for  Mage_Catalog_Model
+			product – determines which class will be used
+
+	Correlation of the class name with a shortened name takes place in the module configuration (/etc/config.xml).
+
+				<!--?xml version="1.0"?-->
+
+                <!-- a shortened name -->
+                Mage_Catalog_Model
+
+                <!-- a shortened name -->
+                Mage_Catalog_Block
+
+                <!-- a shortened name -->
+                Mage_Catalog_Helper
+
+
+○ Describe methods for resolving module conflicts.
+	
+	There are 3 levels of modules compatibility conflicts:
+
+		1) Conflicts in configuration files
+		2) Conflicts with the software part
+		3) Conflicts in a module display
+
+
+	Conflicts in configuration files
+
+		Let’s start with describing the causes of conflicts with configuration files and solutions for it. Primarily, pay attention to the module definition file (Namespace_Modulename.xml), which is located in the app/etc/modules/folder. This file contains the module status (enabled/disabled) and its relation to Magento codepool. Besides, this file allows determining the dependency, which is located between the <depends> </depends> tags.
+
+		If, for example, two modules use the same class dependence, future conflicts may appear in the program parts of modules (improper use of the class constructor). This group of problems is closely connected to our second group – conflicts with the software part, which we consider later. If you experience problems with the compatibility of the modules due to the improper use of <depends>, a possible solution will be to indicate one class as dependency for another and use this dependency in class inheritance in the programming part later on. That’s what you can do:
+
+			a) Replace this code…
+
+				Namespace_OtherModulename.xml
+
+					<config>
+					    <modules>
+					        <Namespace_OtherModulename>
+					            <active>true</active>
+					            <codePool>community</codePool>
+					    <depends><Mage_Something/></depends>
+					        </Namespace_OtherModulename>
+					    </modules>
+					</config>
+
+				Namespace_Modulename.xml
+
+					<config>
+					    <modules>
+					        <Namespace_Modulename>
+					            <active>true</active>
+					            <codePool>community</codePool>
+					    <depends><Mage_Something/></depends>
+					        </Namespace_Modulename>
+					    </modules>
+					</config>
+
+			b) …with that one
+
+				Namespace_OtherModulename.xml
+
+					<config>
+					    <modules>
+					        <Namespace_OtherModulename>
+					            <active>true</active>
+					            <codePool>community</codePool>
+					    <depends><Mage_Something/></depends>
+					        </Namespace_OtherModulename>
+					    </modules>
+					</config>
+	
+				Namespace_Modulename.xml
+
+					<config>
+					    <modules>
+					        <Namespace_Modulename>
+					            <active>true</active>
+					            <codePool>community</codePool>
+					    <depends><Namespace_OtherModulename/></depends>
+					        </Namespace_Modulename>
+					    </modules>
+					</config>
+
+	Conflicts with the software part
+
+		As mentioned earlier, the main reason for module conflicts could be in the use of dependencies and class rewriting. You should regard your module configuration file (/Namespace_Modulename/etc/ config.xml), in which the class rewriting with <rewrite> </rewrite> tags can be used. For example,
+
+			<customer>
+			    <rewrite>
+			         <form_edit>Namespace_Modulename_Block_Rewrite_BlockClass</form_edit>
+			     </rewrite>
+			</customer>
+
+		Incorrect use of class methods is the main reason of conflicts origin. There are several ways to solve this problem, but I would like to highlight the very best and most correct way in my opinion – the elimination of classes overriding. The idea of this method is similar to the previous method of module conflict resolving and offers setting the dependence of one class from another.
+
+			Namespace_Modulename/etc/config.xml
+
+			<customer>
+			    <rewrite>
+			         <form_edit>Namespace_Modulename_Block_Rewrite_BlockClass</form_edit>
+			     </rewrite>
+			</customer>
+
+			Namespace_OtherModulename/etc/config.xml
+
+			<customer>
+			    <rewrite>
+			         <form_edit>Namespace_OtherModulename_Block_Rewrite_BlockClass</form_edit>
+			     </rewrite>
+			</customer>
+
+		1) In the first place remove the rewriting for the first module. Here are the lines:
+
+			<customer>
+			    <rewrite>
+			         <form_edit>Namespace_Modulename_Block_Rewrite_BlockClass</form_edit>
+			     </rewrite>
+			</customer>
+
+		2) Use the first class inheritance from the second one:
+
+			Class Namespace_Modulename_Block_Rewrite_BlockClass extends Namespace_OtherModulename_Block_Rewrite_BlockClass
+
+			Despite the flexibility of this method, it has drawbacks. In particular, you should carefully check the same functions use by these two classes. There may be problems with value return and parent::functionName(); use.  However, I personally consider this method a high-priority in fixing module conflicts on the programming level.
+
+	Conflicts in a module display
+
+		The most frequent conflict appears while using several modules – problems with displaying module on the frontend. There are several reasons why this happens: blocks overriding in layout settings, the use of different template for the same blocks, removing blocks for another module to be embedded in. Let’s take a closer look at locations, where module conflicts may occur.
+
+			theme configuration files (app/design/frontend/default/your_theme/layout)
+			templates (app/design/frontend/default/your_theme/template)
+	
+		If your module is not displayed at all or displayed with errors on the frontend, the high probability that conflicts arise in these files.
+
+		First, check your files and files of other modules for display settings on the frontend, which are located in app/design/frontend/default/your_theme/layout. If several modules use the same block, but allocate various templates to it, you need to change these configurations for template allocation to be used only once for the block. In this template other modules templates will be combined, for which we removed the templates allocations.
+
+		It is also a common mistake to replace a standard block by the module block with a new name. In this case all other modules, which used the standard blocks with the help of <reference> </reference> tags, will not work because of a changed name. Thus, you need to use a new block name for all dead modules, where this block is applied to theme configuration files (layouts folder).
+
+		There are also some cases, when modules use their own templates that are hardly compatible or not compatible with other modules at all. This is single occasions and the solution strongly depends on a specific case.
+
+	To verify your understanding of these objectives, ask yourself the following 
+	questions:
+		■ How does the framework interact with the various codepools?
+		■ What constitutes a namespace and a module?
+		■ What does the structure of a complete theme look like?
+
+	These code references can be used as an entry point to find answers to the questions 
+	above:
+		■ Mage_Core_Model_App
+		■ Mage_Core_Model_Config
+		■ Varien_Autoload
+
+
+Magento configuration
+	
+○ Explain how Magento loads and manipulates configuration information
+
+	Let’s refresh some key points of the Magento structure
+
+		• Magento is a modular system, in which functionality is located in separate modules.
+
+		• There are 3 code pools in Magento – local, community and core.
+
+		• The structure of each module includes app/code/[codePool]/Namespace/Modulename/etc/config.xml (this file contains all basic module settings) and app/etc/modules/Namespace_Modulename.xml (this file contains information about code pool and extension activation flag).
+
+		• Global settings for Magento installation, including database connection data and admin panel address, are stored in app/etc/config.xml и app/etc/local.xml.
+
+	Refer to our previously posted certification-related articles: Magento Codepools and Magento Module Structure
+
+	If we trace the code performance starting from index.php, we’ll get the following outcome:
+
+		Index.php
+		 Mage::run() 
+	        self::$_config = new Mage_Core_Model_Config($options); (in CE 1.6.* and previous versions)
+	        self::_setConfigModel($options); (in СE 1.7.*)
+	        self::$_app    = new Mage_Core_Model_App();
+	        self::$_app->run(…);
+	or
+
+		 Mage::app() 
+	        self::$_app    = new Mage_Core_Model_App();
+	        self::$_app-> init (…);
+
+	Later on we have a similar order of the class methods loading in both versions. In case of the Mage::run() all wrappers for processing configuration loading are located in Mage_Core_Model_App and refer to the Mage_Core_Model_Config methods. Calling Mage::app(), we immediately call Mage_Core_Model_Config::init(), which contains the process of configuration loading.
+
+	Finally, we come to Mage_Core_Model_Config, inherited from Mage_Core_Model_Config_Base and Varien_Simplexml_Config. At this stage the call method doesn’t matter, so let’s refer to Mage_Core_Model_Config:: init():
+
+		<?php
+		    /**
+		     * Initialization of core configuration
+		     *
+		     * @return Mage_Core_Model_Config
+		     */
+		    public function init($options=array())
+		    {
+		        // lets skip cache init and non-standard options stuff
+
+		        $this->loadBase();
+
+		        $cacheLoad = $this->loadModulesCache();
+		        if ($cacheLoad) {
+		            return $this;
+		        }
+		        $this->loadModules();
+		        $this->loadDb();
+		        $this->saveCache();
+		        return $this;
+		    }
+
+	Let’s analyze this method line by line.
+
+		$this->loadBase();
+
+		    /**
+		     * Load base system configuration (config.xml and local.xml files)
+		     *
+		     * @return Mage_Core_Model_Config
+		     */
+		    public function loadBase()
+		    {
+		        $etcDir = $this->getOptions()->getEtcDir();
+		        $files = glob($etcDir.DS.'*.xml');
+		        $this->loadFile(current($files));
+		        while ($file = next($files)) {
+		            $merge = clone $this->_prototype;
+		            $merge->loadFile($file);
+		            $this->extend($merge);
+		        }
+		        if (in_array($etcDir.DS.'local.xml', $files)) {
+		            $this->_isLocalConfigLoaded = true;
+		        }
+		        return $this;
+		    }
+
+	From the very beginning we define the absolute path to app/etc directory. Then we get a list of all .xml files from this catalog, read their content and merge into a single simpleXmlElement object. If local.xml file has been loaded (which generally means that Magento has already been installed), set flag $this->_isLocalConfigLoaded = true;. It will be used later to initialize store and load module setup scripts.
+
+	As far as this method doesn’t limit names and the amount of loaded files, we can add our custom .xml file into app/etc, if necessary. It can be helpful for specifying database connection data on a dev-server without the use of local.xml file, containing production-server information only.
+
+		<?php
+		        $cacheLoad = $this->loadModulesCache();
+		        if ($cacheLoad) {
+		            return $this;
+		        }
+
+	This piece of code speaks for itself. If the configuration cache is enabled and contains the required information, we load the entire config. We also replace the config that has already been loaded from app/etc with the one, loaded from the cache (Mage_Core_Model_Config:: loadCache()) and return back to Mage_Core_Model_App.
+
+	There is a reasonable question you might ask at this point: if the whole configuration can be loaded from cache, why haven’t developers made this verification the first step, before scanning app/etc directory?
+
+	The thing is that Magento cache can be stored not only as files in var/cache, but in apc, memcached and xcache as well. This particular step with files loading from app/etc allows to define the type and configuration of the cache storage used.
+
+	The next step is loading of the most extensive configuration part – modules configuration.
+
+		$this->loadModules();
+
+		    /**
+		     * Load modules configuration
+		     *
+		     * @return Mage_Core_Model_Config
+		     */
+		    public function loadModules()
+		    {
+		        Varien_Profiler::start('config/load-modules');
+		        $this->_loadDeclaredModules();
+
+		        $resourceConfig = sprintf('config.%s.xml', $this->_getResourceConnectionModel('core'));
+		        $this->loadModulesConfiguration(array('config.xml',$resourceConfig), $this);
+
+		        /**
+		         * Prevent local.xml directives overwriting
+		         */
+		        $mergeConfig = clone $this->_prototype;
+		        $this->_isLocalConfigLoaded = $mergeConfig->loadFile($this->getOptions()->getEtcDir().DS.'local.xml');
+		        if ($this->_isLocalConfigLoaded) {
+		            $this->extend($mergeConfig);
+		        }
+
+		        $this->applyExtends();
+		        Varien_Profiler::stop('config/load-modules');
+		        return $this;
+		    }
+
+		$this->_loadDeclaredModules();
+
+	_getDeclaredModuleFiles(): At the beginning we scan app/etc/modules directory and collect the list of paths to all .xml files, indicating all modules in the system. We form an associative array with “base”, “mage” and “custom” keys. Only Mage_All.xml path goes to the “base” section. Modules from the Magento basic pack (located in app/code/core/Mage – code pool “core”) go to the «mage» section. «Custom» section collects the rest of modules. At the end we merge everything into a single array. Due to initial splitting into keys, data is stored in the following sequence: Mage_All.xml, modules with Mage namespace, all other modules.
+
+	If you haven’t figured out why Magento developers paid so much attention to Mage_All.xml file, it’s a high time for you to look inside of it. Mage_All.xml contains all information required for loading modules that are crucial for the proper system operation.
+
+	Next, information from the list of collected .xml files is loaded into Mage_Core_Model_Config_Base $unsortedConfig. Then we get the$moduleDepends array, based on <depends>, <active> flags and module name.
+
+	$this->_sortModuleDepends($moduleDepends): is necessary for checking dependencies of all existing modules. After the verification a new array is formed, where modules are arranged regarding their dependencies on one another.
+
+	At the end of _loadDeclaredModules() we create simpleXmlElement object again and merge it with the one that has been created earlier from app/etc/*.xml.
+
+	Let’s get back to loadModules() method.
+
+		<?php
+	        $resourceConfig = sprintf('config.%s.xml', $this->_getResourceConnectionModel('core'));
+	        $this->loadModulesConfiguration(array('config.xml',$resourceConfig), $this);
+
+	$resourceConfig contains config.mysql4.xml line. Thus, our next step will be loading configuration from config.mysql4.xml and config.mysql4.xml files. It is still not clear, what config.mysql4.xml was planned to be used for, but I really hope that further releases will exclude reference to this file or eventually it will prove to be needed.
+
+	First this method checks whether modules could be loaded from local code pool (pay attention at <disable_local_modules>false</disable_local_modules> in app/etc/local.xml). If only modules from community and core are permitted, Magento will change include_path() correspondingly.
+
+		<?php
+	        if ($disableLocalModules && !defined('COMPILER_INCLUDE_PATH')) {
+	            set_include_path(
+	                // excluded '/app/code/local'
+	                BP . DS . 'app' . DS . 'code' . DS . 'community' . PS .
+	                BP . DS . 'app' . DS . 'code' . DS . 'core' . PS .
+	                BP . DS . 'lib' . PS .
+	                Mage::registry('original_include_path')
+	            );
+	        }
+
+	After this simple verification Magento ensures that we already have some config – simpleXmlElement (if we don’t – it creates it) and delete from the loaded list of modules ones that have keys <active>false</active> and <codePool>local</codePool>.
+
+	Then for each of remained modules config.xml and config.mysql4.xml files are loaded. Next, as you’ve most likely figured out by yourselves, the loaded .xml is added to the existing one. If the last loaded file already contains the older xpath, system will use the last value.
+
+	The $this->applyExtends(); call originally was a way to change (override) data in config with the help of a custom extension. But this functionality is not in use at the moment.
+
+	If someone has managed to read everything down to these lines, please, pay attention to the following piece of code:
+
+		<?php
+	        /**
+	         * Prevent local.xml directives overwriting
+	         */
+	        $mergeConfig = clone $this->_prototype;
+	        $this->_isLocalConfigLoaded = $mergeConfig->loadFile($this->getOptions()->getEtcDir().DS.'local.xml');
+	        if ($this->_isLocalConfigLoaded) {
+	            $this->extend($mergeConfig);
+	        }
+
+	As we see, developers took care of no module could modify system data from app/etc/local.xml (the default database connection, outer cache and proxy-servers settings).
+
+	Finally, we’ve approached $this->loadDb();
+
+		<?php
+		    /**
+		     * Load config data from DB
+		     *
+		     * @return Mage_Core_Model_Config
+		     */
+		    public function loadDb()
+		    {
+		        if ($this->_isLocalConfigLoaded && Mage::isInstalled()) {
+		            Varien_Profiler::start('config/load-db');
+		            $dbConf = $this->getResourceModel();
+		            $dbConf->loadToXml($this);
+		            Varien_Profiler::stop('config/load-db');
+		        }
+		        return $this;
+		    }
+
+	This method uses resource Mage_Core_Model_Resource_Config model, related to core_config_data table. At this step we load data from core_config_data into our configuration:
+
+		1. We add data about websites (see core_website table)
+		2. We add data about stores for the existing websites (see core_store table)
+		3. We add data from core_config_data according to the scope
+			a. Create <default> block first
+			b. Then create <websites> block
+			c. And, finally – <stores>
+			d. Each iteration replaces data from more general area of the scope with more specific one (Do you remember these amazing «use default», «use website» and «configuration scope» in the backend?)
+		4. Self-configuration (if Magento meets data related to no longer existing website, these data will be deleted).
+
+	The next step is writing config into cache, if it is enabled.
+
+	Our configuration is formed by now, but besides compiling this .xml file, we need to obtain data from it somehow. Let’s go back to Mage.php.
+
+		Here are the methods:
+
+		<?php
+		    /**
+		     * Retrieve config value for store by path
+		     *
+		     * @param string $path
+		     * @param mixed $store
+		     * @return mixed
+		     */
+		    public static function getStoreConfig($path, $store = null)
+		    {
+		        return self::app()->getStore($store)->getConfig($path);
+		    }
+
+		    /**
+		     * Retrieve config flag for store by path
+		     *
+		     * @param string $path
+		     * @param mixed $store
+		     * @return bool
+		     */
+		    public static function getStoreConfigFlag($path, $store = null)
+		    {
+		        $flag = strtolower(self::getStoreConfig($path, $store));
+		        if (!empty($flag) && 'false' !== $flag) {
+		            return true;
+		        } else {
+		            return false;
+		        }
+		    }
+		 
+	Their only difference is that getStoreConfig() will return the exact value while getStoreConfigFlag(), as its name suggests, returns boolean true or false. Both methods send us to Mage_Core_Model_Store::getConfig()
+
+		<?php
+		    /**
+		     * Retrieve store configuration data
+		     *
+		     * @param   string $path
+		     * @return  string|null
+		     */
+		    public function getConfig($path)
+		    {
+		        if (isset($this->_configCache[$path])) {
+		            return $this->_configCache[$path];
+		        }
+
+		        $config = Mage::getConfig();
+
+		        $fullPath = 'stores/' . $this->getCode() . '/' . $path;
+		        $data = $config->getNode($fullPath);
+		        if (!$data && !Mage::isInstalled()) {
+		            $data = $config->getNode('default/' . $path);
+		        }
+		        if (!$data) {
+		            return null;
+		        }
+		        return $this->_processConfigValue($fullPath, $path, $data);
+		    }
+
+	If the requested information is not found in a local cache, this method will use the path stores/[store code]/[requested path]. If data is still not found, the method will use another path default/[requested path] to search in the loaded configuration. When nothing is found, method will return null.
+
+	Found data is processed via _processConfigValue() method:
+
+		• If the returned node has children, data will be stored in a local cache recursively. By the next call within a current user session there will be no need to look for a found data in the configuration.
+		• If the node has backend_model, this model should be requested to bring data to the required format.
+		• Variable of {{unsecure_base_url}}, {{unsecure_base_url}}, {{base_url}}sort are replaced by the correspondent values.
+
+	As a conclusion I would like to sum everything up and point out the basics.
+
+		1. All .xml files are collected into one big simpleXmlElement object
+
+		2. First, data is loaded from app/etc/*.xml and then from app/etc/modules/*.xml. Based on the module loaded information, config.xml is loaded from the etc directory of the module. If we load backend to check ACL and build menu elements, adminhtml.xml and system.xml are loaded as well. Configuration data from the database is the last one to load.
+
+		3. Any parameters, except the ones stored in app/etc/local.xml, can be overridden in config.xml of a custom module.
+
+	P.S. Even though Magento provides us with such convenient methods as Mage:: getStoreConfig() and Mage:: getStoreConfigFlag(), we can reach any element of the configuration tree with the help of Mage::getConfig()->getNode($path, $scope, $scopeCode);
+
+	Look at your final config of the Magento installation by running the following piece of code in the site root directory:
+
+		<?php
+			define('MAGENTO_ROOT', getcwd());
+
+			$mageFilename = MAGENTO_ROOT . '/app/Mage.php';
+			require_once $mageFilename;
+			umask(0);
+
+			/* Store or website code */
+			$mageRunCode = isset($_SERVER['MAGE_RUN_CODE']) ? $_SERVER['MAGE_RUN_CODE'] : '';
+
+			/* Run store or run website */
+			$mageRunType = isset($_SERVER['MAGE_RUN_TYPE']) ? $_SERVER['MAGE_RUN_TYPE'] : 'store';
+
+			Mage::app($mageRunCode, $mageRunType);
+
+			$config = Mage::getConfig()->getNode()->asXml();
+			file_put_contents('config.xml', $config);
+			 
+
+○ Describe class group configuration and use in factory methods 
+
+	Magento uses factory methods to instantiate Models, Blocks and Helpers classes, applying a necessary method (for example getModel, helper etc.). You should pass an abstract name of a class group, followed by an entity name. Class groups are described in configuration XML files in /etc/config.xml files of appropriate modules.
+
+	Let’s have a look at the proccess of class instantiating by the example of models and try to instantiate the product object. This can be done by using getModel() method:
+
+		$product = Mage::getModel(‘catalog/product’);
+
+	This method retrieves an instance of Mage_Catalog_Model_Product this way:
+		
+		app/Mage.php
+
+			/**
+		     * Retrieve model object
+		     *
+		     * @link    Mage_Core_Model_Config::getModelInstance
+		     * @param   string $modelClass
+		     * @param   array|object $arguments
+		     * @return  Mage_Core_Model_Abstract|false
+		     */
+		    public static function getModel($modelClass = '', $arguments = array())
+		    {
+		        return self::getConfig()->getModelInstance($modelClass, $arguments);
+		    }
+
+	getModel() calls getModelInstance() method, which gets class instance with the help of getModelClassName
+
+		app/code/core/Mage/Core/Model/Config.php
+
+		    /**
+		     * Get model class instance.
+		     *
+		     * Example:
+		     * $config->getModelInstance('catalog/product')
+		     *
+		     * Will instantiate Mage_Catalog_Model_Mysql4_Product
+		     *
+		     * @param string $modelClass
+		     * @param array|object $constructArguments
+		     * @return Mage_Core_Model_Abstract|false
+		     */
+		    public function getModelInstance($modelClass='', $constructArguments=array())
+		    {
+		        $className = $this->getModelClassName($modelClass);
+		        if (class_exists($className)) {
+		            Varien_Profiler::start('CORE::create_object_of::'.$className);
+		            $obj = new $className($constructArguments);
+		            Varien_Profiler::stop('CORE::create_object_of::'.$className);
+		            return $obj;
+		        } else {
+		            return false;
+		        }
+		    }
+
+		    /**
+		     * Retrieve module class name
+		     *
+		     * @param   sting $modelClass
+		     * @return  string
+		     */
+		    public function getModelClassName($modelClass)
+		    {
+		        $modelClass = trim($modelClass);
+		        if (strpos($modelClass, '/')===false) {
+		            return $modelClass;
+		        }
+		        return $this->getGroupedClassName('model', $modelClass);
+		    }
+
+	getGroupedClassName() method does all the work. As you can see from getModelClassName, we pass the group type (model, block or helper) and the class identifier (in our case catalog/product) to this method. It explodes our string by using ‘/’ as needle, removes whitespaces and forms array of strings.
+
+	Then we load Varien_Simplexml_Element and pass our group name (catalog) to find class prefix name from config.xml of our module. In our example it would be Mage_Catalog_Model; in case this extension was overwritten, it could be Namespace_Catalog_Model. We also add entity class name (product) and after using Magento uc_words (based on PHP ucwords that returns a string with the first character of each word capitalized, if that character is alphabetic), we finally receive Mage_Catalog_Model_Product that will be returned in getModelInstance. As we noticed from above, it will create the object, using a new operator.
+
+			/**
+		     * Retrieve class name by class group
+		     *
+		     * @param   string $groupType currently supported model, block, helper
+		     * @param   string $classId slash separated class identifier, ex. group/class
+		     * @param   string $groupRootNode optional config path for group config
+		     * @return  string
+		     */
+		    public function getGroupedClassName($groupType, $classId, $groupRootNode=null)
+		    {
+		        if (empty($groupRootNode)) {
+		            $groupRootNode = 'global/'.$groupType.'s';
+		        }
+
+		        $classArr = explode('/', trim($classId));
+		        $group = $classArr[0];
+		        $class = !empty($classArr[1]) ? $classArr[1] : null;
+
+		        if (isset($this->_classNameCache[$groupRootNode][$group][$class])) {
+		            return $this->_classNameCache[$groupRootNode][$group][$class];
+		        }
+
+		        $config = $this->_xml->global->{$groupType.'s'}->{$group};
+
+		        // First - check maybe the entity class was rewritten
+		        $className = null;
+		        if (isset($config->rewrite->$class)) {
+		            $className = (string)$config->rewrite->$class;
+		        } else {
+		            /**
+		             * Backwards compatibility for pre-MMDB extensions.
+		             * In MMDB release resource nodes <..._mysql4> were renamed to <..._resource>. So  is left
+		             * to keep name of previously used nodes, that still may be used by non-updated extensions.
+		             */
+		            if ($config->deprecatedNode) {
+		                $deprecatedNode = $config->deprecatedNode;
+		                $configOld = $this->_xml->global->{$groupType.'s'}->$deprecatedNode;
+		                if (isset($configOld->rewrite->$class)) {
+		                    $className = (string) $configOld->rewrite->$class;
+		                }
+		            }
+		        }
+
+		        // Second - if entity is not rewritten then use class prefix to form class name
+		        if (empty($className)) {
+		            if (!empty($config)) {
+		                $className = $config->getClassName();
+		            }
+		            if (empty($className)) {
+		                $className = 'mage_'.$group.'_'.$groupType;
+		            }
+		            if (!empty($class)) {
+		                $className .= '_'.$class;
+		            }
+		            $className = uc_words($className);
+		        }
+
+		        $this->_classNameCache[$groupRootNode][$group][$class] = $className;
+		        return $className;
+		    }
+
+	Now let’s review how to declare class alias – a string that calls class (model, block, helper – depends from usage context)) we have declared. Alias naming rule is: group/entity.
+
+	As we observed, the group name is declared in configuration files in /etc/folder of the module.
+
+		General case
+
+   		     Namespace_Modulename_Model
+		
+		In our specific case
+             Mage_Catalog_Model
+
+	Creating models objects, we can also try to use Mage::getSingleton() method. The method differs from getModel() by using different Design Pattern called Singleton, which means that only one instantiation of a class is used during the runtime process. However, when calling getModel(), a new class will be created every time the method is called.
+
+	Helpers
+
+		Instantiate a helper class the same way you do models. We call Mage::helper(‘group/entity’) and it calls getHelperClassName() in its turn, which has a default value ‘data’ in entity name. It means that if you pass only a group name, for example Mage::helper(‘catalog’), it will create an object of Mage_Catalog_Helper_Data class.
+
+			/**
+		     * Retrieve helper object
+		     *
+		     * @param string $name the helper name
+		     * @return Mage_Core_Helper_Abstract
+		     */
+		    public static function helper($name)
+		    {
+		        $registryKey = '_helper/' . $name;
+		        if (!self::registry($registryKey)) {
+		            $helperClass = self::getConfig()->getHelperClassName($name);
+		            self::register($registryKey, new $helperClass);
+		        }
+		        return self::registry($registryKey);
+		    }
+
+	From the code above you may notice that Magento registers a variable when the helper is being created. So helper instance can be created only one time during runtime.
+
+			public function getHelperClassName($helperName)
+			    {
+			        if (strpos($helperName, '/') === false) {
+			            $helperName .= '/data';
+			        }
+			        return $this->getGroupedClassName('helper', $helperName);
+			    }
+
+        Namespace_Modulename_Helper
+
+	Blocks
+
+		The proccess of instantiating blocks is similar to the one of creating models and helpers. Blocks can be instantiated via layout xml (
+
+        	Namespace_Modulename_Block
+
+	P.S. In Magento 2.0 this process will be changed as follows: Support to receive and process direct class names was added to all basic Magento methods that create objects. Support for class-id strings was retained to ensure a smooth transition (Framework Changes from 1.x to 2.x).
+
+	So instead of Mage::getModel(‘catalog/product’) it will be Mage::getModel(‘Mage_Catalog_Model_Product’). But this would be a completely new story;)
+
+○ Describe the process and configuration of class overrides in Magento
+
+	we have described the following factory methods, used in Magento.
+
+		•    for blocks        Mage_Core_Model_Layout :: createBlock(...)
+		•    for models        Mage :: getModel(...) and getResourceModel(...)
+		•    for helpers        Mage :: helper(...)
+
+	Due to the use of these factory methods, it became possible to implement rewrite.
+
+	What is it and how can we make use of it?
+
+		Let’s take the example of a model. As we mentioned, due to the getModel(‘catalog/product’) method, Magento returns an object of a certain class the way as follows:
+
+			1) It defines class name.
+			2) It creates an object for this class and calls autoloader.
+				a.    It turns class name into Mage/Catalog/Model/Product.php path.
+				b.    Server searches this file automatically among 3 codepools (local, community, core) and in the lib directory.
+
+	As a result, Magento loads the first found class according to the order, defined in include_path.
+
+	If we want to change basic Magento functionality, here are the options.
+
+	To do poorly. We can simply duplicate the file and its path (see the ‘a’ step above) into local codepool. Our class will be loaded from the local folder due to the priority of this codepool in the list, mentioned in include_path. Now make the necessary changes in the copied file.
+
+	So why is it bad? Because after copying the entire file, we will most likely miss all changes, made in a new version of the file, when Magento update is released. This method is better to be used for fast and dirty fixes.
+
+	To act smart. Inherit this class and describe in it changes only. There is a huge plus, compared to the previous method – readability. After all, we immediately see what was changed. Rewrite hurries to our rescue here. It allows us on the very first define class name stage to replace the name of the existing class with the name of our class (inherited from the original one). 
+
+	How to describe it
+
+	Let’s create a module. In config.xml inside globals -> models, blocks and helpers we can specify our rewrites. For example, to override the standard class of the Mage_Catalog_Model_Product product, you need to use:
+
+		<global>
+		...
+		<models>
+		    ...
+		    <catalog>
+		        <rewrite>
+		            <product> Namespace_Modulename_Model_Myproduct </product>
+		        </rewrite>
+		    </catalog>
+		</models>
+		</global>
+
+	Principle is the same as in Magento path.
+
+		<catalog>   – specify module namespace (catalog – node name can be viewed in module configuration in the section for modules);
+		<rewrite>   – mark that next the list of module rewrites will be described;
+		<product> – part of the classname following the group classname (Mage_Catalog_Model). A new class name is specified inside, and the class will be used instead of the standard one.
+
+	To override the Mage_Adminhtml_Sales_Order_Create class, we will add the following lines in configuration (models section):
+
+		<adminhtml>
+		    <rewrite>
+		        <sales_order_create> Namespace_Modulename_Model_Adminhtml_Order_Create</sales_order_create>
+		    </rewrite>
+		</adminhtml>
+
+	The substitution is made here:
+
+		Mage :: getModel($modelClass, $arguments){
+		    Mage_Core_Model_Config :: getModelInstance($modelClass, $arguments){
+		        $className = $this->getModelClassName($modelClass){
+		            return  $this->getGroupedClassName('model', $modelClass)
+		        }
+		        ...
+		        $obj = new $className($arguments);
+		    }
+		}
+
+	getGroupedClassName makes search in rewrites, described in the layout. What will happen if we describe several rewrites for a single class? The first found will be executed. Peep inside a previous post Module Conflicts to find out more about such cases.
+
+	Creating rewrite for Blocks and Helpers is similar. We also have another integral part of Magento MVC – controllers. How can we change the functionality of a standard controller?
+
+	Controllers
+
+		To override the controller, we add a new router to config.xml of the module (expect to read more about router in the future posts). In brief, the pattern below helps establish the connection between router (used in the url) and a particular module.
+
+			<frontend>
+			   <routers>
+			      <modulename>
+			           <use>standard</use>
+			           <args>
+			              <module>Namespace_Modulename</module>
+			              <frontName>routername</frontName>
+			           </args>
+			      </modulename>
+			   </routers>
+			</frontend>
+
+		Creating modules, we normally set the connection between our router and a module. In this case we override the connection of existing router with our module.
+
+		    <frontend>
+		        <routers>
+		            <prevmodulename>
+		                <args>
+		                    <modules>
+		                        <namespace_modulename before="Prevnamespace_Prevmodulename">
+		               Namespace_Modulename
+		                        </namespace_modulename>
+		                    </modules>
+		                </args>
+		            </prevmodulename>
+		        </routers>
+		    </frontend>
+
+		Now we create a controller with the same name in our module like this:
+
+			<?php
+			require_once 'Prevnamespace/Prevmodulename/controllers/FilenameController.php';
+
+			class Namespace_Modulename_FilenameController extends Prevnamespace_Prevmodulename_FilenameController
+			{
+			    ...
+			}
+
+	 	Prevnamespace, Prevmodulename – name space and modul name, where we need to override the controller.
+
+		Filename – the name of an overridable controller
+		Namespace, Modulename- name space and module name with an extended controller
+
+		Rewrites may certainly be inevitable. But they cause modules conflicts and problems with updates. How do we pull ourselves through this? Let’s have a look at a very classy way to affect Magento.
+
+	Events in Magento
+
+		Observer pattern, implemented in Magento, allows inserting additional actions at given moments of code execution.
+
+		This pattern helps developing independent modules that embed their functionality with the help of events. It means it will be way more preferable to find an “observer” instead of rewriting the class. This observer will allow executing events at a certain time, influencing some kind of data. How is it realized?
+
+		Look for the mentioned notes in the code
+			
+			Mage::dispatchEvent(‘event_name’, $event_arguments);
+
+		This note is an “observer” that allows executing methods, attached to it, transferring $event_arguments data array into methods.
+
+		For example, there is a great “observer” in the Mage_Core_Model_Abstract class, which allows impacting any object after it has been saved in database as far as models inherit Mage_Core_Model_Abstract.
+
+		    protected function _afterSave()
+		    {
+		    ...
+		    Mage::dispatchEvent($this->_eventPrefix.'_save_after', $this->_getEventData());    ...
+		    }
+
+		Let’s have a look at the Mage_Catalog_Model_Product model. After saving the product, the described method will be called.
+
+			$this->_eventPrefix = 'catalog_product';
+
+			$this->_getEventData()= array(
+			    'data_object' => $this,
+			    ‘product’     => $this,
+			);
+
+		Here is what we get:
+
+			Mage::dispatchEvent(‘catalog_product_save_after’, array(…, ‘product’ => $this));
+
+		Events that will be called are described in config.xml via layout. In our case:
+
+			<adminhtml>
+			    <events>
+			        <catalog_product_save_after>
+			            <observers>
+			                <my_individual_name>
+			                    <type>singleton</type>
+			                    <class>modulename/observer</class>
+			                    <method>methodName</method>
+			                </my_individual_name>
+			            </observers>
+			        </catalog_product_save_after>
+			    </events>
+			</adminhtml>
+
+		(In this case I announce the event for area adminhtml, but events may also be described both by global and, of course, frontend).
+
+			class Namespace_Modulename_Model_Observer
+			{
+			    public function methodName(Varien_Event_Observer $observer)
+			    {
+			        ...
+
+			    }
+			}
+
+		We can get the data of the array, transferred in dispatchEvent method, via $observer object. In our example array(…, ‘product’ => $this) is transferred. To receive the element of the product array, we should use $observer->getEvent()->getProduct().
+
+		Together with other events we are free to use the ones, formed automatically and individually for your module and for models and controllers, created in it.
+
+			Models
+				*_load_before
+				*_load_after
+
+				*_save_before
+				*_save_after
+				*_save_commit_after
+
+				*_delete_before
+				*_delete_after
+				*_delete_commit_after
+
+				* – protected $_eventPrefix = ‘…’
+
+		Specified individually in a created model
+
+		    Controllers
+				controller_action_predispatch_*
+				controller_action_predispatch_**
+
+				controller_action_postdispatch_**
+				controller_action_postdispatch_*
+
+				controller_action_layout_render_before_**
+	
+	(described in a controller, it mostly concerns blocks)
+
+			*  – RouteName
+			** – RouteName_ControllerName_ActionName
+
+	Using Observers, described in Magento core, is a very good habit. Remember to create Observers in the main locations of your modules. It will help developers use and customize extensions in their projects easily.
+
+○ Set up a cron job
+
+	As any complex system, Magento has a lot of tasks that need to be executed periodically. Here are some of these processes: catalog price rules, sending newsletters, generating Google Sitemaps, customer alerts/notifications (product price change, product back to stock), automatic updating of currency rates, scheduled DB logs cleanup, etc.
+
+	For that purpose we need to setup a cron job on a server. From Wikipedia we know that cron is the time-based job scheduler. Cron enables users to schedule jobs (commands or shell scripts) to run periodically at certain times or dates.
+
+	To set up a cron job, first of all we should make our server run cron.php intermittently (that is located in Magento installation root). For that purpose Magento developers provide us with a shell script – cron.sh, which is also located in installation root. Depending on your operational system, you need to edit either crontab on UNIX/BSD/Linux, using crontab -e command, or add a new task using Scheduled Tasks service for Windows. More information on this topic can be found on Magento Wiki page or in a Sweet Tooth manual.
+
+		cron.php file
+
+		Let’s have a look
+
+			try {
+			Mage::getConfig()->init()->loadEventObservers('crontab');
+			Mage::app()->addEventArea('crontab');
+			Mage::dispatchEvent('default');
+			} catch (Exception $e) {
+			Mage::printException($e);
+			}
+
+	If we thoroughly look at these three lines of code and investigate which methods they call further, we can see that after initialization of config file for crontab section Magento finally invokes Mage_Cron_Model_Observer->dipatch() that does the following:
+
+		1. Process scheduled cron queue: Magento reads the cron schedule table for jobs that need to be executed this very second and jobs that should have already been executed, i.e. with timestamps in the past, that haven’t expired. The expiry limit is also a parameter, configurable in the admin panel. After all the work, dispatch method calls two generate() and cleanup() methods
+
+    	2. Generate tasks schedule: Mage_Cron_Model_Observer->generate(), this method searches final configuration file for content of <crontab> nodes ($config = Mage::getConfig()->getNode(‘crontab/jobs’); ), reading <schedule><cron_expr> elements to find out when and how often they need to be executed and pulls this data into the cron_schedule table.
+
+    	3. Cleanup: Mage_Cron_Model_Observer->cleanup(), this method deletes completed (with ‘success’ status) or missed ($time < $now – $scheduleLifetime, where $scheduleLifetime are set in Magento admin area) jobs from cron_schedule DB table.
+
+		cron_schedule table
+
+		Refer to this source while preparing for the exam.
+
+			schedule_id – unique proccess id
+			job_code – job identifier from configuration
+			status – can be one of the predifened statuses: pending, running, success, missed, error
+			messages – custom text reported by method that was executed by the job
+			created_at – date/time when the task was created at, i.e. when server executes cron.php
+			scheduled_at – date/time when the task is planned to be executed, that is specified in <schedule> node of the config file
+			executed_at – date/time when the task was actually executed (NULL prior to execution)
+			finished_at – date/time when the task finished execution (NULL prior to execution)
+
+	When schedules are generated, status is set to pending, created_at to now() and scheduled_at to target date/time.
+
+	When pending schedules are executed, status is set to running and executed_at to now().
+
+	When scheduled task is finished successfully, status is set to success and finished_at to now().
+
+	When scheduled task has thrown an exception, status is set to error and finished_at to now().
+
+	If task status is pending and scheduled_at is older than “Missed if not run within” configured value, status is set to missed.
+
+	Set up cron in Magento admin area
+
+	Cron (Scheduled Tasks) can be set up from the admin panel. The path is System -> Configuration -> System -> Cron (Scheduled Tasks)
+
+	There are six settings here. Please, note that the time is measured in minutes. Even though Magento has predifened settings for all of them, you can tune everything according to your needs.
+
+	Generate Schedules Every: schedules will be generated with setup frequency.
+
+	Schedule ahead for: schedules will be generated for this amount of time ahead.
+
+	Missed if not run within: if cron.php was executed within setup minutes after the task was scheduled, it will be executed. Otherwise, Magento will mark it as ‘missed’ in cron_schedule table
+
+	History cleanup every: Magento will clean up history not more than setup amount of minutes.
+
+	Success history lifetime: tasks with ‘success’ status will be stored in cron_schedule table for this amount of minutes.
+
+	Failure history lifetime: Tasks that have status ‘error’ and ‘missed’ will be stored in cron_schedule table for this amount of minutes.
+
+	Set up a cron job for custom extensions
+
+	Here is how config of our custom extension will look like:
+
+		<config>
+		    <crontab>
+		        <jobs>
+		            <cronjob_code>
+		                <schedule><cron_expr>*/15 * * * *</cron_expr></schedule>
+		                <run><model>modulename/modelname::methodName</model></run>
+		            </cronjob_code>
+		        </jobs>
+		    </crontab>
+		</config>
+
+	<cronjob_code> – should be unique identifier, will be used as job_code in cron_schedule DB table
+
+	<schedule><cron_expr>* * * * *</cron_expr></schedule> – each asterisk stands for time period corespondingly: minutes, hours, days, months, years. If you leave it this way (* * * * *), cron job will be executed every minute. In our example, cron job will be run every 15 minutes <schedule><cron_expr>*/15 * * * *</cron_expr></schedule> or we can use alternative syntax to do that <schedule><cron_expr>0,15,30,45 * * * *</cron_expr></schedule>. If you want, for example, to run your job at 3 a.m., you need to do your cron expresion this way: <schedule><cron_expr>0 3 * * *</cron_expr></schedule>
+
+	<run><model>modulename/modelname::methodName</model></run>
+
+	Your modulename and modelname should be written in lowercase and stored according to certain (Magento Factory method) rules. methodName shoulb be written as is.
+
+	We need to write the code of our method in app/code/local/Namespace/Modulename/Model/Modelname.php
+
+		<?php
+
+		public function methodName() {
+
+		//put here whatever you need
+
+		}
+
+Since Magento is an XML DOM configuration-based framework, a thorough 
+understanding of how Magento loads and assembles its configuration XML DOM is a 
+core competency.
+	■ How does the framework discover active modules and their 
+	configuration?
+	■ What are the common methods with which the framework accesses its 
+	configuration values and areas?
+	■ How are per-store configuration values established in the XML DOM?
+	■ By what process do the factory methods and autoloader enable class
+	instantiation?
+	■ Which class types have configured prefixes, and how does this relate to 
+	class overrides?
+	■ Which class types and files have explicit paths?
+	■ What configuration parameters are available for event observers?
+	■ What are the interface and configuration options for automatically fired 
+	events?
+	■ What is the structure of event observers, and how are properties 
+	accessed therein?
+	■ What configuration parameters are available for cron jobs?
+
+These code references can be used as an entry point to find answers to the questions above:
+	■ Mage_Core_Model_App_Area 
+	■ Mage_Core_Model_Config
+	■ Mage_Core_Model_Store
+	■ Varien_Event_Observer
+
+
+Internationalization
+Magento can manage multiple stores in a single installation. There are three layers in this hierarchy – websites, stores and store views.
+
+The top level is Website. It’s made up of one or multiple stores. They in turn are made up of one or multiple store views. Stores have the same customers, orders and shopping carts. They are set of store views and the main idea of stores is to group store views in a website.
+
+Most of Magento installations have only one website with one store and only one store view. As store Views are the actual store instances, they are typically used for internationalization purposes, i.e. translation of your store into different languages. Therefore, if you need to display your store in multiple languages, for example English, French and German, you should create the store once and then create three different store views for this particular store.
+
+
+
+ 
+
+New store view can be created via Magento Admin panel. Log into it, select System -> Manage Stores and click Create store view.
+
+
+
+ 
+
+Next, you need to fill the form and select Store, enter your store name, its code, status, sort order and then Save Store View.
+
+
+
+ 
+
+After that you need to go to System -> Configuration, choose the needed store view and find Locale options section under General tab. Next, from Locale drop-down, select the right one (the first comes language, the second – country, for example, for Canadian English it would be English (Canada)).
+
+
+
+ 
+
+Next, you need to download translation package/files. They can be downloaded from the official Magento site, either from Translations directory added by contributors or from Magento connect added by Magento core team.
+
+After refreshing caches we’re all set; in default Magento, the store view can be accessed via http://yoursite.com/index.php?___store=store_code. There is also a setting to add store_code into URL like this http://site.com/index.php/store_code. It can be set up in System -> Config -> Web -> Url Options -> Add Store Code to Urls.
+
+The use of Magento translate classes and translate files.
+
+Everywhere in Magento templates (.phtml files) you can see something similar to this one $this->__(‘some string’). Actually it’s Mage::helper(‘core’)->__()
+
+Let’s see how it looks like.
+
+app/code/core/Mage/Core/Helper/Abstract.php
+
+/**
+     * Translate
+     *
+     * @return string
+     */
+    public function __()
+    {
+        $args = func_get_args();
+        $expr = new Mage_Core_Model_Translate_Expr(array_shift($args), $this->_getModuleName());
+        array_unshift($args, $expr);
+        return Mage::app()->getTranslator()->translate($args);
+    }
+ 
+
+So it calls getTranslator and retrieves translate object.
+
+/**
+ * Retrieve translate object
+ *
+ * @return Mage_Core_Model_Translate
+ */
+public function getTranslator()
+{
+    if (!$this->_translator) {
+        $this->_translator = Mage::getSingleton('core/translate');
+    }
+    return $this->_translator;
+}
+ 
+
+And then translate() method that returns the resulting text in app/code/core/Mage/Core/Model/Translate.php
+
+
+/**
+     * Translate
+     *
+     * @param   array $args
+     * @return  string
+     */
+    public function translate($args)
+    {
+        $text = array_shift($args);
+
+        if (is_string($text) && ''==$text
+            || is_null($text)
+            || is_bool($text) && false===$text
+            || is_object($text) && ''==$text->getText()) {
+            return '';
+        }
+        if ($text instanceof Mage_Core_Model_Translate_Expr) {
+            $code = $text->getCode(self::SCOPE_SEPARATOR);
+            $module = $text->getModule();
+            $text = $text->getText();
+            $translated = $this->_getTranslatedString($text, $code);
+        }
+        else {
+            if (!empty($_REQUEST['theme'])) {
+                $module = 'frontend/default/'.$_REQUEST['theme'];
+            } else {
+                $module = 'frontend/default/default';
+            }
+            $code = $module.self::SCOPE_SEPARATOR.$text;
+            $translated = $this->_getTranslatedString($text, $code);
+        }
+
+        //array_unshift($args, $translated);
+        //$result = @call_user_func_array('sprintf', $args);
+
+        $result = @vsprintf($translated, $args);
+        if ($result === false) {
+            $result = $translated;
+        }
+
+        if ($this->_translateInline && $this->getTranslateInline()) {
+            if (strpos($result, '{{{')===false || strpos($result, '}}}')===false || strpos($result, '}}{{')===false) {
+                $result = '{{{'.$result.'}}{{'.$translated.'}}{{'.$text.'}}{{'.$module.'}}}';
+            }
+        }
+
+        return $result;
+    }
+ 
+
+Developer mode influence on Magento translations.
+
+Let’s see how Magento initializes translation.
+
+app/code/core/Mage/Core/Model/Translate.php
+
+
+ /**
+     * Initialization translation data
+     *
+     * @param   string $area
+     * @return  Mage_Core_Model_Translate
+     */
+    public function init($area, $forceReload = false)
+    {
+        $this->setConfig(array(self::CONFIG_KEY_AREA=>$area));
+
+        $this->_translateInline = Mage::getSingleton('core/translate_inline')
+            ->isAllowed($area=='adminhtml' ? 'admin' : null);
+
+        if (!$forceReload) {
+            if ($this->_canUseCache()) {
+                $this->_data = $this->_loadCache();
+                if ($this->_data !== false) {
+                    return $this;
+                }
+            }
+            Mage::app()->removeCache($this->getCacheId());
+        }
+
+        $this->_data = array();
+
+//Loading data from module translation files
+        foreach ($this->getModulesConfig() as $moduleName=>$info) {
+            $info = $info->asArray();
+            $this->_loadModuleTranslation($moduleName, $info['files'], $forceReload);
+        }
+
+        $this->_loadThemeTranslation($forceReload);
+        $this->_loadDbTranslation($forceReload);
+
+        if (!$forceReload && $this->_canUseCache()) {
+            $this->_saveCache();
+        }
+
+        return $this;
+    }
+ 
+
+As we can see, Magento supports and loads three different types of translations data – Module translation, Theme translation and DbTranslation. Let’s look at one of these methods more thoroughly: _loadModuleTranslation (just need to be mentioned that all three methods call _addData method inside their code).
+
+ /**
+     * Loading data from module translation files
+     *
+     * @param   string $moduleName
+     * @param   string $files
+     * @return  Mage_Core_Model_Translate
+     */
+    protected function _loadModuleTranslation($moduleName, $files, $forceReload=false)
+    {
+        foreach ($files as $file) {
+            $file = $this->_getModuleFilePath($moduleName, $file);
+            $this->_addData($this->_getFileData($file), $moduleName, $forceReload);
+        }
+        return $this;
+    }
+ 
+
+And finally, in this method we can see how Magento adds translation data. Inside of this method, Magento checks whether developer mode was set to true (if (Mage::getIsDeveloperMode())) and, if so, it’s not allowing to use translation, not related to module (i.e. unset data array).
+
+
+    /**
+     * Adding translation data
+     *
+     * @param array $data
+     * @param string $scope
+     * @return Mage_Core_Model_Translate
+     */
+    protected function _addData($data, $scope, $forceReload=false)
+    {
+        foreach ($data as $key => $value) {
+            if ($key === $value) {
+                continue;
+            }
+            $key    = $this->_prepareDataString($key);
+            $value  = $this->_prepareDataString($value);
+            if ($scope && isset($this->_dataScope[$key]) && !$forceReload ) {
+                /**
+                 * Checking previous value
+                 */
+                $scopeKey = $this->_dataScope[$key] . self::SCOPE_SEPARATOR . $key;
+                if (!isset($this->_data[$scopeKey])) {
+                    if (isset($this->_data[$key])) {
+                        $this->_data[$scopeKey] = $this->_data[$key];
+                        /**
+                         * Not allow use translation not related to module
+                         */
+                        if (Mage::getIsDeveloperMode()) {
+                            unset($this->_data[$key]);
+                        }
+                    }
+                }
+                $scopeKey = $scope . self::SCOPE_SEPARATOR . $key;
+                $this->_data[$scopeKey] = $value;
+            }
+            else {
+                $this->_data[$key]     = $value;
+                $this->_dataScope[$key]= $scope;
+            }
+        }
+        return $this;
+    }
+ 
+
+How many options exist to add a custom translation for any given string?
+
+As mentioned above, there are three options in Magento to add a custom translation to a text string: module translation, theme translation and inline translation.
+
+1. Module translation
+
+Module translations are stored in app/locale/languagecode_COUNTRYCODE/ folder in form of csv files, named as Namespace_Modulename.csv All string in extensions that are inside __() method can be translated this way
+
+2. Theme translation
+
+Strings can be translated inside your theme, for that you just need to set locale via Magento admin area, then create translate.csv in app/design/frontend/<package>/<theme>/locale/ languagecode_COUNTRYCODE and put your translated strings inside this CSV
+
+“My Cart”,”My Basket”
+
+“My Account”,”Account”
+
+There are a lot of tips&tricks that can be described on this subject (module and theme translations), so I feel like they deserve an individual article. Stay tuned!
+
+3. Inline translation
+
+To enable inline translation you need to log into Admin panel and go to System -> Configuration -> Developer.
+
+You need to select Store view from scope select and enable inline translation for this desired store view there.
+
+
+
+ 
+
+All translation made by this method will be stored in core_translate table inside your database. In order to understand better how this method works, check this video out.
+
+Translation options priority.
+
+As we saw in intit() method from
+
+//Loading data from module translation files
+        foreach ($this->getModulesConfig() as $moduleName=>$info) {
+            $info = $info->asArray();
+            $this->_loadModuleTranslation($moduleName, $info['files'], $forceReload);
+        }
+
+        $this->_loadThemeTranslation($forceReload);
+        $this->_loadDbTranslation($forceReload);
+ 
+
+It means that Magento loads translations in the following order:
+
+CSV in /app/locale
+CSV in /app/design/<area>/<package>/<theme>/locale (theme folder translate)
+Database (table core_translate)
+Which, in turn, means that inline translation (table core_translate) has the highest priority, then goes translate.csv from your theme folder and finally module translations from app/locale.
+
+What are the advantages and disadvantages of using subdomains and subdirectories in internationalization?
+
+Subfolders (yourstore.com/uk, yourstore.com/ru)
+
+Advantages
+
+Separate folders can be still targeted.
+Easier linking process.
+All SEO efforts and advertisements will affect all subfolders the website will even count towards the power of the subdirectories.
+Easy to manage.
+Disadvantages
+
+SERP limitations.
+On large sites, the URL anatomy can be quite messy (if handled well, it can look very slick though).
+Unable to benefit from hosting different parts of the site in different countries.
+Subdomains (uk.yourstore.com, ru.yourstore.com)
+
+Advantages
+
+Cost (only one domain is used).
+Individual subdomain can be hosted in different countries (there is a belief amongst SEO people that it’s a great idea to host sites inside).
+Better usability (recognizable country from the domain).
+Disadvantages
+
+Extra link building is required.
+Maintaining several subdomains is more difficult.
+
+
+To verify your understanding of these objectives, ask yourself the following 
+questions:
+■ Which method is used for translating strings, and on which types of 
+objects is it generally available?
+■ In what way does the developer mode influence how Magento handles 
+translations?
+■ How many options exist to add a custom translation for any given 
+string?
+■ What is the priority of translation options?
+■ How are translation conflicts (when two modules translate the same 
+string) processed by Magento?
+These code references can be used as an entry point to find answers to the questions 
+above:
+■ Mage_Core_Model_Translate::init()
+■ Mage_Core_Model_Locale::emulate()
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
