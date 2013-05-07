@@ -38,7 +38,8 @@
 			<div class="slides">
 
 				<section>
-					<h1>Study Session 2</h1>
+					<h1>Magento Study Guide</h1>
+					<h2>Study Session 2</h2>
 					<h3>Magento Made Easy</h3>
 					<p>
 						<small>Created by <a href="http://jeffreylroberts.com">Jeffrey L. Roberts</a> / <a href="http://twitter.com/phpdevops">@phpdevops</a></small>
@@ -46,63 +47,257 @@
 				</section>
 
 				<section>
-					<h2>Heads Up</h2>
-					<p>
-						reveal.js is a framework for easily creating beautiful presentations using HTML. You'll need a browser with
-						support for CSS 3D transforms to see it in its full glory.
-					</p>
-
+					<h1>Code Pools</h1>
+					<ul>
+						<li><h2>Core</h2></li>
+						<li><h2>Community</h2></li>
+						<li><h2>Local</h2></li>
+					</ul>
 					<aside class="notes">
 						Oh hey, these are some notes. They'll be hidden in your presentation, but you can see them if you open the speaker notes window (hit 's' on your keyboard).
 					</aside>
 				</section>
 
+				<section>
+					<h1>Code Pools</h1>
+					<h2>Core</h2>
+					<p>
+						The core code pool contains the base Magento application. Only Magento core product developers should change files in this code pool. If you need to edit a file in the core, it is a best practice to override or rewrite that class or method.
+					</p>
+				</section>
+
+				<section>
+					<h1>Code Pools</h1>
+					<h2>Community</h2>
+					<p>
+						The community code pool contains files that have been extended from
+the core code pool and that can apply to several different instances of Magento. Most extension developers make their changes and additions in this code pool because their extensions can be used by any merchant who installs their extension.
+					</p>
+					
+				</section>
+
+
+				<section>
+					<h1>Code Pools</h1>
+					
+					<h2>Local</h2>
+					<p>
+						The local code pool contains files that have been extended from the core code pool but that will only be used by a specific instance of Magento. The local code pool is used by merchants who want to customize their platforms, but do not want to make their customizations available to the community at large.					</p>
+				</section>
+
+
 				<!-- Example of nested vertical slides -->
 				<section>
 					<section>
-						<h2>Vertical Slides</h2>
+						<h2>Module Code Structure</h2>
 						<p>
-							Slides can be nested inside of other slides,
-							try pressing <a href="#" class="navigate-down">down</a>.
+							Code files are grouped together based on functionality into
+modules. Module can consist of the following components:
+<ul><li>Blocks</li>
+	<li>Models</li>
+	<li>Resource Models</li>
+	<li>Controllers</li>
+	<li>Configuration</li>
+	<li>Helpers</li>
+	<li>Schema SQL Scripts</li>
+	<li>Data SQL Scripts</li>
+</ul>
 						</p>
 						<a href="#" class="image navigate-down">
 							<img width="178" height="238" src="https://s3.amazonaws.com/hakim-static/reveal-js/arrow.png" alt="Down arrow">
 						</a>
 					</section>
 					<section>
-						<h2>Basement Level 1</h2>
-						<p>Press down or up to navigate.</p>
-					</section>
-					<section>
-						<h2>Basement Level 2</h2>
-						<p>Cornify</p>
-						<a class="test" href="http://cornify.com">
-							<img width="280" height="326" src="https://s3.amazonaws.com/hakim-static/reveal-js/cornify.gif" alt="Unicorn">
+						<h2>Blocks</h2>
+						<p>- Responsible for preparing data for display in templates</p>
+						<a href="#" class="image navigate-down">
+							<img width="178" height="238" src="https://s3.amazonaws.com/hakim-static/reveal-js/arrow.png" alt="Down arrow">
 						</a>
 					</section>
 					<section>
-						<h2>Basement Level 3</h2>
-						<p>That's it, time to go back up.</p>
-						<a href="#/2" class="image">
+						<h2>Models</h2>
+						<p> - Implement business logic</p>
+						<a href="#" class="image navigate-down">
+							<img width="178" height="238" src="https://s3.amazonaws.com/hakim-static/reveal-js/arrow.png" alt="Down arrow">
+						</a>
+					</section>
+					<section>
+						<h2>Resource Models</h2>
+						<p> - Provide an access layer to data for the extension</p>
+						<a href="#" class="image navigate-down">
+							<img width="178" height="238" src="https://s3.amazonaws.com/hakim-static/reveal-js/arrow.png" alt="Down arrow">
+						</a>
+					</section>
+					<section>
+						<h2>Controllers</h2>
+						<p> - Contain methods called actions which process web server requests that correspond to a specific module</p>
+						<a href="#" class="image navigate-down">
+							<img width="178" height="238" src="https://s3.amazonaws.com/hakim-static/reveal-js/arrow.png" alt="Down arrow">
+						</a>
+					</section>
+										<section>
+						<h2>Configuration</h2>
+						<p> - Module-specific XML configuration files that tell the application
+how the module interacts with it</p>
+						<a href="#" class="image navigate-down">
+							<img width="178" height="238" src="https://s3.amazonaws.com/hakim-static/reveal-js/arrow.png" alt="Down arrow">
+						</a>
+					</section>
+										<section>
+						<h2>Helpers</h2>
+						<p> - Auxiliary classes that implement commonly used business
+logic. Examples: forms, validators, formatters</p>
+						<a href="#" class="image navigate-down">
+							<img width="178" height="238" src="https://s3.amazonaws.com/hakim-static/reveal-js/arrow.png" alt="Down arrow">
+						</a>
+					</section>
+										<section>
+						<h2>Schema SQL Scripts</h2>
+						<p> - SQL scripts that implement schema changes to a specific
+module</p>
+						<a href="#" class="image navigate-down">
+							<img width="178" height="238" src="https://s3.amazonaws.com/hakim-static/reveal-js/arrow.png" alt="Down arrow">
+						</a>
+					</section>
+										<section>
+						<h2>Data SQL Scripts</h2>
+						<p> - Scripts that manipulate the data for the SQL schema of a
+module. Pay strict attention to this as different upgrades were added in Magento Enterprise Edition (EE) 1.11 and Magento Community Edition (CE) 1.6</p>
+						<a href="#" class="image navigate-down">
+							<img width="178" height="238" src="https://s3.amazonaws.com/hakim-static/reveal-js/arrow.png" alt="Down arrow">
+						</a>
+					</section>
+					<section>
+					<a href="#/6" class="image">
 							<img width="178" height="238" src="https://s3.amazonaws.com/hakim-static/reveal-js/arrow.png" alt="Up arrow" style="-webkit-transform: rotate(180deg);">
 						</a>
 					</section>
 				</section>
 
 				<section>
-					<h2>Point of View</h2>
-					<p>
-						Press <strong>ESC</strong> to enter the slide overview. Hold down alt and click on any element to zoom in on it using <a href="http://lab.hakim.se/zoom-js">zoom.js</a>. Alt + click anywhere to zoom back out.
-					</p>
+					<section>
+						<h2>Theme files are organized into the following subdirectories</h2>
+						<p>
+							<ul>
+								<li>Layout</li>
+								<li>Template</li>
+								<li>Locale</li>
+							</ul>
+						</p>
+					</section>
+					<section>
+						<h2>Layout</h2>
+						<p>
+Contains the basic XML files that define block structure for different pages as well as control meta information.						</p>
+					</section>
+					<section>
+						<h2>Template</h2>
+						<p>
+Contains the PHTML files that contain xHTML markups and any necessary PHP to create logic for visual presentation. Some templates are page templates and some are block templates.						</p>
+					</section>
+					<section>
+						<h2>Locale</h2>
+						<p>
+Contains simple CSV text documents organized on a per language basis containing translation strings (as name-value pairs) for all text produced by Magento (e.g., for interface elements and messages, not products and categories)						</p>
+					</section>
 				</section>
 
 				<section>
-					<h2>rvl.io</h2>
-					<p>
-						If you don't like writing slides in HTML you can use the online editor <a href="http://www.rvl.io" target="_blank">rvl.io</a>.
-					</p>
+					<section>
+						<h2>Skin files are organized into the following subdirectories</h2>
+						<p>
+							<ul>
+								<li>CSS</li>
+								<li>Images</li>
+								<li>JS</li>
+							</ul>
+						</p>
+					</section>
+					<section>
+						<h2>CSS</h2>
+						<p>
+Contains the CSS files used to control visual styling of the website
+						</p>
+					</section>
+					<section>
+						<h2>Images</h2>
+						<p>
+Contains all images used by the theme						</p>
+					</section>
+					<section>
+						<h2>JS</h2>
+						<p>
+							Contains theme-specific JavaScript routines and callable functions.
+						</p>
+					</section>
+					<section>
+					<a href="#/8" class="image">
+							<img width="178" height="238" src="https://s3.amazonaws.com/hakim-static/reveal-js/arrow.png" alt="Up arrow" style="-webkit-transform: rotate(180deg);">
+						</a>
+					</section>
 				</section>
 
+				<section>
+					<section>
+						<h2>Theme Fall-Back</h2>
+						<p>
+							Magento's theme hierarchy allows developers to localize their themes, changing or adding only those files that are actually necessary for a custom theme. Any files that are not customized in the new theme are pulled from the default theme and base package.
+						</p>
+					</section>
+					<section>
+						<h2>Theme Fall-Back cont.</h2>
+						<p>
+							<ul>
+								<li>
+									<p>If a custom theme is specified, the application looks for the file in
+									</p>
+								
+									<ul>
+										<li>
+											app/design/frontend/custom_package/custom_theme
+										</li>
+										<li>
+											skin/frontend/custom_package/custom_theme
+										</li>
+									</ul>	
+								</li>
+								<li>
+
+									<p>If the file is not found in the custom theme, the application moves up a level and looks for it in
+									</p>
+								
+									<ul>
+										<li>
+											app/design/frontend/custom_package/default
+										</li>
+										<li>
+											skin/frontend/custom_package/default
+										</li>
+									</ul>	
+								</li>
+								<li>
+									<p>If not found in the default, the application looks for the requested file in:
+									</p>
+								
+									<ul>
+										<li>
+											app/design/frontend/base/default
+										</li>
+										<li>
+											skin/frontend/base/default
+										</li>
+									</ul>	
+								</li>
+								<li>If not found, a rendering error will occur.</li>
+							</ul>
+						</p>
+					</section>
+					<section>
+					<a href="#/9" class="image">
+							<img width="178" height="238" src="https://s3.amazonaws.com/hakim-static/reveal-js/arrow.png" alt="Up arrow" style="-webkit-transform: rotate(180deg);">
+						</a>
+					</section>
+				</section>
 				<section>
 					<h2>Works in Mobile Safari</h2>
 					<p>
