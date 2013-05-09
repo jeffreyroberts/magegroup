@@ -451,13 +451,169 @@ Contains all images used by the theme						</p>
 If, for example, two modules use the same class dependence, future conflicts may appear in the program parts of modules (improper use of the class constructor). This group of problems is closely connected to our second group – conflicts with the software part, which we consider later. If you experience problems with the compatibility of the modules due to the improper use of <depends>, a possible solution will be to indicate one class as dependency for another and use this dependency in class inheritance in the programming part later on. That’s what you can do:
 						</p>	
 					</section>
+					<section><h1>Module Conflicts</h1>
+						<h3>Conflicts in configuration files</h3>
+						<br />
+						<p>Make one of the conflicting modules inherit the other</p> 
+						<pre><code>
+	&lt;config&gt; 
+	    &lt;modules&gt;
+	        &lt;Namespace_OtherModulename&gt;
+	            &lt;active&gt;true&lt;/active&gt;
+	            &lt;codePool&gt;community&lt;/codePool&gt;
+	    		&lt;depends&gt;&lt;Mage_Something/&gt;&lt;/depends&gt;
+	        &lt;/Namespace_OtherModulename&gt;
+	    &lt;/modules&gt; 
+	&lt;/config&gt;
+
+</code></pre><br /><p>The inheriting module will depends on the parent module</p>
+						<pre><code>
+&lt;config&gt;
+    &lt;modules&gt;
+        &lt;Namespace_Modulename&gt;
+            &lt;active&gt;true&lt;/active&gt;
+            &lt;codePool&gt;community&lt;/codePool&gt;
+    		&lt;depends&gt;&lt;Namespace_OtherModulename/&gt;&lt;/depends&gt;
+        &lt;/Namespace_Modulename&gt;
+    &lt;/modules&gt;
+&lt;/config&gt;
+
+</code></pre></section>
+<section><h1>Module Conflicts</h1>
+						<h3>Conflicts with the software part</h3>
+						<br />
+						<p>As mentioned earlier, the main reason for module conflicts could be in the use of dependencies and class rewriting. You should regard your module configuration file (/Namespace_Modulename/etc/ config.xml), in which the class rewriting with <rewrite> </rewrite> tags can be used. For example,</p> <br />
+						<pre><code>
+&lt;customer&gt;
+  &lt;rewrite&gt;
+    &lt;form_edit&gt;Namespace_Module_Block_Rewrite_BlockClass&lt;/form_edit&gt;
+  &lt;/rewrite&gt;
+&lt;/customer&gt;
+						</code></pre><br /><p>Incorrect use of class methods is the main reason of conflicts origin. There are several ways to solve this problem, but I would like to highlight the very best and most correct way in my opinion – the elimination of classes overriding. The idea of this method is similar to the previous method of module conflict resolving and offers setting the dependence of one class from another.</p>
+
+</section>
+
+<section><h1>Module Conflicts</h1>
+						<h3>Conflicts with the software part</h3>
+					 	<br />
+						<p>Namespace_Module/etc/config.xml</p>
+						<pre><code>
+&lt;customer&gt;
+  &lt;rewrite&gt;
+    &lt;form_edit&gt;Namespace_Module_Block_Rewrite_BlockClass&lt;/form_edit&gt;
+  &lt;/rewrite&gt;
+&lt;/customer&gt;
+						</code></pre>
+						<br />
+						<p>Namespace_OtherModule/etc/config.xml</p>
+						<pre><code>
+&lt;customer&gt;
+  &lt;rewrite&gt;
+    &lt;form_edit&gt;Namespace_OtherModule_Block_Rewrite_BlockClass&lt;/form_edit&gt;
+  &lt;/rewrite&gt;
+&lt;/customer&gt;
+						</code></pre>
+					</section>
+
+<section><h1>Module Conflicts</h1>
+						<h3>Conflicts with the software part</h3>
+					 	<br />
+
+						<br />
+						<p>1) First remove the rewriting for the first module</p>
+						<pre><code>
+&lt;customer&gt;
+  &lt;rewrite&gt;
+    &lt;form_edit&gt;Namespace_Module_Block_Rewrite_BlockClass&lt;/form_edit&gt;
+  &lt;/rewrite&gt;
+&lt;/customer&gt;
+						</code></pre>
+						<br />
+						<p>2) Use the first class inheritance from the second one</p>
+						<pre><code>
+Class Namespace_Module_Block_Rewrite_BlockClass 
+extends Namespace_OtherModule_Block_Rewrite_BlockClass
+						</code></pre>
+						<br />
+						<p>Despite the flexibility of this method, it has drawbacks. In particular, you should carefully check the same functions use by these two classes. There may be problems with value return and parent::functionName(); use.  However, I personally consider this method a high-priority in fixing module conflicts on the programming level.</p>
+						<p>If your module is not displayed at all or displayed with errors on the frontend, the high probability that conflicts arise in these files.</p>
+						</section>
+
+<section><h1>Module Conflicts</h1>
+						<h3>Conflicts with the software part</h3>
+					 	<br />
+					 	<p>First, check your files and files of other modules for display settings on the frontend, which are located in app/design/frontend/default/your_theme/layout. If several modules use the same block, but allocate various templates to it, you need to change these configurations for template allocation to be used only once for the block. In this template other modules templates will be combined, for which we removed the templates allocations.</p>
+					 	<p>It is also a common mistake to replace a standard block by the module block with a new name. In this case all other modules, which used the standard blocks with the help of <reference> </reference> tags, will not work because of a changed name. Thus, you need to use a new block name for all dead modules, where this block is applied to theme configuration files (layouts folder).</p>
+					 	<p>There are also some cases, when modules use their own templates that are hardly compatible or not compatible with other modules at all. This is single occasions and the solution strongly depends on a specific case.</p>
+					</section>
+
+<section><h1>Module Conflicts</h1>
+						<h3>Conflicts in module display</h3>
+					 	<br />
+<p>
+	The most frequent conflict appears while using several modules – problems with displaying module on the frontend. There are several reasons why this happens: blocks overriding in layout settings, the use of different template for the same blocks, removing blocks for another module to be embedded in. Let’s take a closer look at locations, where module conflicts may occur.
+</p>
+<br />
+<ul><li>theme configuration files (app/design/frontend/default/your_theme/layout)</li>
+	<li>templates (app/design/frontend/default/your_theme/template)</li></ul>
+					</section>
+
 
 					<section>
 					<a href="#/7" class="image">
 							<img width="178" height="238" src="https://s3.amazonaws.com/hakim-static/reveal-js/arrow.png" alt="Up arrow" style="-webkit-transform: rotate(180deg);">
 						</a>
 					</section>
-				</section>
+			</section>
+			<section>
+<section><h2>XML Configuration Files</h2>
+						<h3>Loading and Manipulating</h3>
+						<br />
+						<pre><code>
+    /**
+     * Load base system configuration (config.xml and local.xml files)
+     *
+     * @return Mage_Core_Model_Config
+     */
+    public function loadBase()
+    {
+        $etcDir = $this->getOptions()->getEtcDir();
+        $files = glob($etcDir.DS.'*.xml');
+        $this->loadFile(current($files));
+        while ($file = next($files)) {
+            $merge = clone $this->_prototype;
+            $merge->loadFile($file);
+            $this->extend($merge);
+        }
+        if (in_array($etcDir.DS.'local.xml', $files)) {
+            $this->_isLocalConfigLoaded = true;
+        }
+        return $this;
+    }
+						</code></pre>
+					 	<br />
+<p>From the very beginning we define the absolute path to app/etc directory. Then we get a list of all .xml files from this catalog, read their content and merge into a single simpleXmlElement object. If local.xml file has been loaded (which generally means that Magento has already been installed), set flag $this->_isLocalConfigLoaded = true;. It will be used later to initialize store and load module setup scripts.</p>
+</section>
+<section>
+<h2>XML Configuration Files</h2>
+						<h3>Loading and Manipulating</h3>
+						<br />
+						<pre><code>
+			
+        $cacheLoad = $this->loadModulesCache();
+        if ($cacheLoad) {
+            return $this;
+        }</code></pre>
+        <p>
+        	This piece of code speaks for itself. If the configuration cache is enabled and contains the required information, we load the entire config. We also replace the config that has already been loaded from app/etc with the one, loaded from the cache (Mage_Core_Model_Config:: loadCache()) and return back to Mage_Core_Model_App.
+        </p>
+</section>
+					<section>
+					<a href="#/8" class="image">
+							<img width="178" height="238" src="https://s3.amazonaws.com/hakim-static/reveal-js/arrow.png" alt="Up arrow" style="-webkit-transform: rotate(180deg);">
+						</a>
+					</section>
+				</section>	
 
 				<section>
 					<h2>Fantastic Ordered List</h2>
