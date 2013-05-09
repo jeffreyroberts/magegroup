@@ -551,6 +551,13 @@ body {
 /*********************************************
  * SLIDES
  *********************************************/
+.jlr_left {
+	text-align: left;
+}
+
+.jlr_left li {
+	margin-bottom: 10px;
+}
 
 .reveal {
 	position: relative;
@@ -563,8 +570,7 @@ body {
 	width: 100%;
 	height: 100%;
 	left: 50%;
-	top: 50%;
-
+	top: 30%;
 	overflow: visible;
 	z-index: 1;
 	text-align: center;

@@ -14,7 +14,7 @@
 
 		<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 
-		<link rel="stylesheet" href="css/reveal.min.css">
+		<link rel="stylesheet" href="css/reveal.css">
 		<link rel="stylesheet" href="css/theme/default.css" id="theme">
 
 		<!-- For syntax highlighting -->
@@ -42,10 +42,20 @@
 					<h2>Study Session 2</h2>
 					<h3>Magento Made Easy</h3>
 					<p>
-						<small>Created by <a href="http://jeffreylroberts.com">Jeffrey L. Roberts</a> / <a href="http://twitter.com/phpdevops">@phpdevops</a></small>
+						<small>Created by</small> 
+					</p>
+					<p>
+						<small><a href="http://jeffreylroberts.com">Jeffrey L. Roberts</a> / <a href="http://twitter.com/phpdevops">@phpdevops</a></small>
+					</p>					
+					<p>
+						<small><a href="http://gregsuskind.com">Greg Suskind</a> / <a href="http://twitter.com/gregsuskind">@gregsuskind</a></small>
+					</p>
+					<p>
+						<small><a href="http://mikedrew.com">Mike Drew</a> / <a href="http://twitter.com/mikedrew">@mikedrew</a></small>
 					</p>
 				</section>
 
+				<section>
 				<section>
 					<h1>Code Pools</h1>
 					<ul>
@@ -85,11 +95,18 @@ the core code pool and that can apply to several different instances of Magento.
 						The local code pool contains files that have been extended from the core code pool but that will only be used by a specific instance of Magento. The local code pool is used by merchants who want to customize their platforms, but do not want to make their customizations available to the community at large.					</p>
 				</section>
 
+					<section>
+					<a href="#/2" class="image">
+							<img width="178" height="238" src="https://s3.amazonaws.com/hakim-static/reveal-js/arrow.png" alt="Up arrow" style="-webkit-transform: rotate(180deg);">
+						</a>
+					</section>
+				</section>
 
 				<!-- Example of nested vertical slides -->
 				<section>
 					<section>
-						<h2>Module Code Structure</h2>
+						<h1>Modules & Extensions</h1>
+						<h2>Code Structure</h2>
 						<p>
 							Code files are grouped together based on functionality into
 modules. Module can consist of the following components:
@@ -103,69 +120,75 @@ modules. Module can consist of the following components:
 	<li>Data SQL Scripts</li>
 </ul>
 						</p>
-						<a href="#" class="image navigate-down">
-							<img width="178" height="238" src="https://s3.amazonaws.com/hakim-static/reveal-js/arrow.png" alt="Down arrow">
-						</a>
+						
 					</section>
 					<section>
+						<h1>Modules & Extensions</h1>
 						<h2>Blocks</h2>
-						<p>- Responsible for preparing data for display in templates</p>
-						<a href="#" class="image navigate-down">
-							<img width="178" height="238" src="https://s3.amazonaws.com/hakim-static/reveal-js/arrow.png" alt="Down arrow">
-						</a>
+						<p>Responsible for preparing data for display in templates</p>
+						<p>This folder is responsible for the View, if we use terms of classical MVC architecture. Blocks coordinate models with the template files. The files in the folder load the data from database and transfer it to the templates in your theme. (.phtml files)</p>
+						
 					</section>
 					<section>
+						<h1>Modules & Extensions</h1>
 						<h2>Models</h2>
-						<p> - Implement business logic</p>
-						<a href="#" class="image navigate-down">
-							<img width="178" height="238" src="https://s3.amazonaws.com/hakim-static/reveal-js/arrow.png" alt="Down arrow">
-						</a>
+						<p>Implement business logic</p>
+						<p class='jlr_left'><ul><li>Most Magento Models can categorized in one of two ways. </li><li>There’s a basic, ActiveRecord-like/one-object-one-table Model, and there’s also an Entity Attribute Value (EAV) Model. </li><li> Each Model also gets a Model Collection. Collections are PHP objects used to hold a number of individual Magento Model instances. The Magento team has implemented the PHP Standard Library interfaces of IteratorAggregate and Countable to allow each Model type to have it’s own collection type. </li><li> Think of Model Collections as arrays that also have methods attached. </li><li>Magento Models don’t contain any code for connecting to the database. Instead, each Model uses two modelResource classes, (one read, one write), that are used to communicate with the database server (via read and write adapter objects).</li></ul></p>
+						
 					</section>
 					<section>
+						<h1>Modules & Extensions</h1>
 						<h2>Resource Models</h2>
 						<p> - Provide an access layer to data for the extension</p>
-						<a href="#" class="image navigate-down">
-							<img width="178" height="238" src="https://s3.amazonaws.com/hakim-static/reveal-js/arrow.png" alt="Down arrow">
-						</a>
+						<p><ul><li>Magento Models don’t contain any code for connecting to the database. Instead, each Model uses two modelResource classes, (one read, one write), that are used to communicate with the database server (via read and write adapter objects).</li></ul></p>
+						
 					</section>
 					<section>
+						<h1>Modules & Extensions</h1>
 						<h2>Controllers</h2>
 						<p> - Contain methods called actions which process web server requests that correspond to a specific module</p>
-						<a href="#" class="image navigate-down">
-							<img width="178" height="238" src="https://s3.amazonaws.com/hakim-static/reveal-js/arrow.png" alt="Down arrow">
-						</a>
+						<p> - Controllers represent all business logic actions for the given request (dispatch(), preDispatch(), postDispatch() methods) and delegate commands to other parts of the system. </p>
+						
 					</section>
 										<section>
+											<h1>Modules & Extensions</h1>
 						<h2>Configuration</h2>
-						<p> - Module-specific XML configuration files that tell the application
-how the module interacts with it</p>
-						<a href="#" class="image navigate-down">
-							<img width="178" height="238" src="https://s3.amazonaws.com/hakim-static/reveal-js/arrow.png" alt="Down arrow">
-						</a>
+						<p> <br /><ul><li> Module-specific XML configuration files that tell the application
+how the module interacts with it<br /><br /></li><li>Each module must have at least config.xml and it’s a right place to declare all models, routers, blocks, helpers, etc.</li></ul></p>
+						<br /><font style='font-size:50px'><pre><code>
+	&lt;config&gt;
+	    &lt;modules&gt;
+	        &lt;Namespace_Modulename&gt;
+	            &lt;version&gt;0.1.0&lt;/version&gt;
+	        &lt;/Namespace_Modulename&gt;
+	    &lt;/modules&gt;
+	&lt;/config&gt;
+						</code></pre></font>
 					</section>
 										<section>
+											<h1>Modules & Extensions</h1>
 						<h2>Helpers</h2>
-						<p> - Auxiliary classes that implement commonly used business
-logic. Examples: forms, validators, formatters</p>
-						<a href="#" class="image navigate-down">
-							<img width="178" height="238" src="https://s3.amazonaws.com/hakim-static/reveal-js/arrow.png" alt="Down arrow">
-						</a>
+						<p><br /><ul><li>Auxiliary classes that implement commonly used business
+logic. Examples: forms, validators, formatters<br /><br /></li><li>Here you can create methods that would be useful for your store in different ways. Helpers contain utility methods, which are commonly used in the whole system. Methods, declared in helpers, can be called from any template file or block, model, controller class by</li></ul></p>
+						<br />
+						<font style='font-size:48px'><pre><code><br /> Mage::helper('modulename/helpername')->methodName();<br /><br /></code></pre></font><br />
+						<p><ul><li>Each Module has a default Data Helper class Modulename/Helper/Data.php and we can call it as</li></ul></p>
+						<br />
+						<font style='font-size:48px'><pre><code><br />      Mage::helper('modulename')->methodName();<br /><br /></code></pre></font>
 					</section>
 										<section>
+											<h1>Modules & Extensions</h1>
 						<h2>Schema SQL Scripts</h2>
-						<p> - SQL scripts that implement schema changes to a specific
-module</p>
-						<a href="#" class="image navigate-down">
-							<img width="178" height="238" src="https://s3.amazonaws.com/hakim-static/reveal-js/arrow.png" alt="Down arrow">
-						</a>
+						<br /><p><ul><li>SQL scripts that implement schema changes to a specific
+module<br /><br /></li><li>Handles any custom database tables which will be used by the module and process all upgrades to the extension.</li></ul></p>
+						
 					</section>
 										<section>
+											<h1>Modules & Extensions</h1>
 						<h2>Data SQL Scripts</h2>
 						<p> - Scripts that manipulate the data for the SQL schema of a
 module. Pay strict attention to this as different upgrades were added in Magento Enterprise Edition (EE) 1.11 and Magento Community Edition (CE) 1.6</p>
-						<a href="#" class="image navigate-down">
-							<img width="178" height="238" src="https://s3.amazonaws.com/hakim-static/reveal-js/arrow.png" alt="Down arrow">
-						</a>
+						
 					</section>
 					<section>
 					<a href="#/6" class="image">
@@ -176,9 +199,10 @@ module. Pay strict attention to this as different upgrades were added in Magento
 
 				<section>
 					<section>
+						<h1>Themes & Skins</h1>
 						<h2>Theme files are organized into the following subdirectories</h2>
 						<p>
-							<ul>
+							<ul> 
 								<li>Layout</li>
 								<li>Template</li>
 								<li>Locale</li>
@@ -186,24 +210,65 @@ module. Pay strict attention to this as different upgrades were added in Magento
 						</p>
 					</section>
 					<section>
+						<h1>Themes & Skins</h1>
 						<h2>Layout</h2>
+						<br />
 						<p>
-Contains the basic XML files that define block structure for different pages as well as control meta information.						</p>
+Contains the basic XML files that define block structure for different pages as well as control meta information.			</p><br />
+<pre><code>
+    &lt;default&gt;
+        &lt;!-- Mage_Tag --&gt;
+        &lt;reference name=&quot;left&quot;&gt;
+            &lt;block type=&quot;tag/popular&quot; name=&quot;tags_popular&quot; template=&quot;tag/popular.phtml&quot;/&gt;
+        &lt;/reference&gt;
+
+    &lt;/default&gt; 
+</code></pre>
 					</section>
 					<section>
+						<h1>Themes & Skins</h1>
 						<h2>Template</h2>
+						<br />
 						<p>
 Contains the PHTML files that contain xHTML markups and any necessary PHP to create logic for visual presentation. Some templates are page templates and some are block templates.						</p>
+<br />
+<font style='font-size:45px;'><pre><code>
+    &lt;div class=&quot;block-title&quot;&gt;
+        &lt;strong&gt;
+            &lt;span&gt;
+                &lt;?php echo $this-&gt;__('Popular Tags'); ?&gt;
+            &lt;/span&gt;
+        &lt;/strong&gt;
+    &lt;/div&gt;
+
+</code></pre></font>
 					</section>
 					<section>
+						<h1>Themes & Skins</h1>
 						<h2>Locale</h2>
+						<br />
 						<p>
-Contains simple CSV text documents organized on a per language basis containing translation strings (as name-value pairs) for all text produced by Magento (e.g., for interface elements and messages, not products and categories)						</p>
+Contains simple CSV text documents organized on a per language basis containing translation strings (as name-value pairs) for all text produced by Magento (e.g., for interface elements and messages, not products and categories)						</p><br />
+<font style='font-size:45px;'><pre><code>
+  "Manage Banners","Banner verwalten"
+  "Name must not be empty.","Name darf nicht leer sein."
+  "New Banner","Neues Banner"
+  "No","Nein"
+  "No Default Content","Kein Standardinhalt"
+  "One at the time, Random","Einzeln, zufällig"
+
+</code></pre></font>	
+					</section>
+										<section>
+					<a href="#/4" class="image">
+							<img width="178" height="238" src="https://s3.amazonaws.com/hakim-static/reveal-js/arrow.png" alt="Up arrow" style="-webkit-transform: rotate(180deg);">
+						</a>
 					</section>
 				</section>
 
 				<section>
 					<section>
+						<h1>Themes & Skins</h1>
 						<h2>Skin files are organized into the following subdirectories</h2>
 						<p>
 							<ul>
@@ -214,24 +279,36 @@ Contains simple CSV text documents organized on a per language basis containing 
 						</p>
 					</section>
 					<section>
+						<h1>Themes & Skins</h1>
 						<h2>CSS</h2>
+						<br />
 						<p>
 Contains the CSS files used to control visual styling of the website
 						</p>
+						<br />
+						<img src='imgs/magento_frontend.png' />
 					</section>
 					<section>
+						<h1>Themes & Skins</h1>
 						<h2>Images</h2>
+						<br />
 						<p>
 Contains all images used by the theme						</p>
+<br />
+						<img src='imgs/magento_frontend_images.png' />
 					</section>
 					<section>
+						<h1>Themes & Skins</h1>
 						<h2>JS</h2>
+						<br />
 						<p>
 							Contains theme-specific JavaScript routines and callable functions.
 						</p>
+						<br />
+						<img src='imgs/magento_frontend_js.png' />
 					</section>
 					<section>
-					<a href="#/8" class="image">
+					<a href="#/5" class="image">
 							<img width="178" height="238" src="https://s3.amazonaws.com/hakim-static/reveal-js/arrow.png" alt="Up arrow" style="-webkit-transform: rotate(180deg);">
 						</a>
 					</section>
@@ -293,26 +370,93 @@ Contains all images used by the theme						</p>
 						</p>
 					</section>
 					<section>
-					<a href="#/9" class="image">
+					<a href="#/6" class="image">
 							<img width="178" height="238" src="https://s3.amazonaws.com/hakim-static/reveal-js/arrow.png" alt="Up arrow" style="-webkit-transform: rotate(180deg);">
 						</a>
 					</section>
 				</section>
 				<section>
-					<h2>Works in Mobile Safari</h2>
-					<p>
-						Try it out! You can swipe through the slides and pinch your way to the overview.
-					</p>
-				</section>
+					<section>
+						<h1>Conventions</h1>
+						<h2>Class Naming Conventions</h2>
+						<br />
+						<p>
+							Zend Framework standardizes on a class naming convention whereby the names of the classes directly map to the directories in which they are stored. The root level directory of Zend Framework's standard library is the "Zend/" directory, whereas the root level directory of Zend Framework's extras library is the "ZendX/" directory. All Zend Framework classes are stored hierarchically under these root directories..
+						</p>
+					</section>
+					<section>
+						<h1>Conventions</h1>
+						<h2>Class Naming Conventions</h2>
+						<br />
+						<p>
+							Class names may only contain alphanumeric characters. Numbers are permitted in class names but are discouraged in most cases. Underscores are only permitted in place of the path separator; the filename "Zend/Db/Table.php" must map to the class name "Zend_Db_Table".
 
+						</p>
+					</section>
+					<section>
+						<h1>Conventions</h1>
+						<h2>Class Naming Conventions</h2>
+						<br />
+						<p>
+							If a class name is comprised of more than one word, the first letter of each new word must be capitalized. Successive capitalized letters are not allowed, e.g. a class "Zend_PDF" is not allowed while "Zend_Pdf" is acceptable.
+
+						</p>
+					</section>
+					<section>
+						<h1>Conventions</h1>
+						<h2>Class Naming Conventions</h2>
+						<br />
+						<p>
+							Magento standardizes class names depending on their location in the file system. Such standardization enables automatic class loading (autoloader) instead of using require_once and include_once functions. Rather than the directory separator (‘/’ – invalid character for class names), developers use the underscore character (‘_’).
+						</p>
+					</section>
+					<section>
+						<h1>Conventions</h1>
+						<h2>Class Naming Conventions</h2>
+						<br />
+						<p>
+							For example, the Mage_Catalog_Model_Product class is located in the /app/code/core/Mage/Catalog/Model/Product.php category. Magento autoloader replaces all underscore characters (‘_’) with the category separator (‘/’) and looks for the file in one of the categories (/app/code/local can be disabled in the app/etc/local.xml in the disable_local_modules tag).
+						</p>
+					</section>
+
+					<section>
+					<a href="#/7" class="image">
+							<img width="178" height="238" src="https://s3.amazonaws.com/hakim-static/reveal-js/arrow.png" alt="Up arrow" style="-webkit-transform: rotate(180deg);">
+						</a>
+					</section>
+				</section>
 				<section>
-					<h2>Marvelous Unordered List</h2>
-					<ul>
-						<li>No order here</li>
-						<li>Or here</li>
-						<li>Or here</li>
-						<li>Or here</li>
-					</ul>
+					<section>
+						<h1>Module Conflicts</h2>
+						<h2>Types of conflicts</h2>
+						<br />
+						<ul>
+							<li>Conflicts in configuration files</li>
+							<li>Conflicts with the software part</li>
+							<li>Conflicts in a module display</li>
+						</ul>
+					</section>
+					<section>
+						<h1>Module Conflicts</h1>
+						<h3>Conflicts in configuration files</h3>
+						<br />
+						<p style='text-align: left'>
+							Let’s start with describing the causes of conflicts with configuration files and solutions for it. Primarily, pay attention to the module definition file (Namespace_Modulename.xml), which is located in the app/etc/modules/folder. This file contains the module status (enabled/disabled) and its relation to Magento codepool. Besides, this file allows determining the dependency, which is located between the <depends> </depends> tags.</p>	
+					</section>
+					<section>
+						<h1>Module Conflicts</h1>
+						<h3>Conflicts in configuration files</h3>
+						<br />
+						<p style='text-align: left'>
+If, for example, two modules use the same class dependence, future conflicts may appear in the program parts of modules (improper use of the class constructor). This group of problems is closely connected to our second group – conflicts with the software part, which we consider later. If you experience problems with the compatibility of the modules due to the improper use of <depends>, a possible solution will be to indicate one class as dependency for another and use this dependency in class inheritance in the programming part later on. That’s what you can do:
+						</p>	
+					</section>
+
+					<section>
+					<a href="#/7" class="image">
+							<img width="178" height="238" src="https://s3.amazonaws.com/hakim-static/reveal-js/arrow.png" alt="Up arrow" style="-webkit-transform: rotate(180deg);">
+						</a>
+					</section>
 				</section>
 
 				<section>
